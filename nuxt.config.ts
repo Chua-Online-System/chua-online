@@ -23,9 +23,16 @@ export default defineNuxtConfig({
           name: 'description',
           content:
             'Trải nghiệm viếng chùa online: thắp nhang, rung chuông, cầu an, xin xăm trong không gian thiền tịnh.'
-        }
+        },
+        { name: 'theme-color', content: '#8B2E2E' },
+        { name: 'apple-mobile-web-app-capable', content: 'yes' },
+        { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
+        { name: 'apple-mobile-web-app-title', content: 'Đi Chùa Onl' }
       ],
       link: [
+        { rel: 'manifest', href: '/manifest.webmanifest' },
+        { rel: 'icon', type: 'image/svg+xml', href: '/icon-192.svg' },
+        { rel: 'apple-touch-icon', href: '/icon-192.svg' },
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
         {

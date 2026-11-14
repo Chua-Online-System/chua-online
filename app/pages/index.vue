@@ -44,39 +44,50 @@
       </p>
       <div class="mx-auto max-w-4xl">
         <MeritBox />
-        <div class="mt-8 text-center">
-          <NuxtLink to="/hanh-huong" class="btn-zen text-base">
+        <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
+          <NuxtLink to="/hanh-huong" class="btn-zen text-base shadow-glow">
             <span>🏔️</span> Hành hương 3D — leo núi vào chùa
           </NuxtLink>
-          <NuxtLink to="/chua" class="btn-zen text-base ml-2 opacity-80">
-            <span>🪷</span> Vào chùa (bản cũ)
+          <NuxtLink to="/chua" class="btn-zen text-base bg-dong/20 hover:bg-dong/30">
+            <span>🪷</span> Chánh điện & Tu tập
           </NuxtLink>
-          <p class="mt-3 text-xs text-go/50">Cúng dường tùy tâm, không bắt buộc — bạn có thể vào chùa bất cứ lúc nào.</p>
+          <NuxtLink to="/ban-do" class="btn-zen text-base bg-kem border border-dong/50 hover:bg-dong/15 text-go">
+            <span>🗺️</span> Bản đồ chùa 2.5D
+          </NuxtLink>
         </div>
+        <p class="mt-3 text-center text-xs text-go/50">Cúng dường tùy tâm, không bắt buộc — bạn có thể vào chùa bất cứ lúc nào.</p>
       </div>
     </section>
 
     <LotusDivider class="container-zen my-6" />
 
-    <!-- Giới thiệu ngắn -->
+    <!-- Giới thiệu ngắn 8 hoạt động danh lam -->
     <section id="gioi-thieu" class="container-zen pb-28 pt-8">
-      <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div
           v-for="f in [
-            { i: '🕯️', t: 'Thắp nhang', d: 'Dâng 1, 3 hoặc 5 nén hương, khói tỏa an nhiên.' },
-            { i: '🔔', t: 'Rung chuông', d: 'Tiếng chuông ngân, lắng lòng buông muộn phiền.' },
-            { i: '📿', t: 'Tụng kinh', d: 'Tụng kinh niệm Phật theo nhịp mõ, nhiếp tâm an trú.' },
-            { i: '🪷', t: 'Cầu an', d: 'Ghi lời nguyện lành vào sổ vàng thiền môn.' },
-            { i: '🎋', t: 'Xin xăm', d: 'Gieo một quẻ, tùy duyên nghe lời chỉ dẫn.' }
+            { i: '🕯️', t: 'Thắp nhang', d: 'Dâng 1, 3 hoặc 5 nén tâm hương, khói tỏa thanh tịnh.' },
+            { i: '🔔', t: 'Rung chuông', d: 'Tiếng chuông ngân vang, buông bỏ muộn phiền nơi chốn nhân gian.' },
+            { i: '📿', t: 'Niệm Phật 108 hạt', d: 'Lần chuỗi hạt theo nhịp mõ, tâm an định trong chánh niệm.' },
+            { i: '🧘', t: 'Toạ thiền định', d: 'Chuông thiền 432Hz, theo dõi nhịp thở và điều hòa thân tâm.' },
+            { i: '🐟', t: 'Hồ phóng sinh', d: 'Thả cá Koi ảo, rắc mồi và ngắm đàn cá bơi lội thanh thản.' },
+            { i: '🌳', t: 'Vườn Bồ Đề', d: 'Gieo mầm giác ngộ, tưới nước mỗi ngày và treo dải lụa cầu an.' },
+            { i: '🪔', t: 'Thả hoa đăng', d: 'Thắp nến hoa sen trôi trên sông đêm, gửi gắm ước nguyện an yên.' },
+            { i: '🎋', t: 'Xin xăm & Cầu an', d: 'Gieo quẻ thẻ bài, ghi sổ vàng hồi hướng công đức gia tiên.' }
           ]"
           :key="f.t"
-          class="card-zen p-6 text-center transition-transform duration-500 hover:-translate-y-1"
+          class="card-zen p-5 text-center transition-transform duration-500 hover:-translate-y-1"
         >
-          <div class="mx-auto mb-3 text-3xl glow-icon">{{ f.i }}</div>
-          <h3 class="font-serif text-xl text-do">{{ f.t }}</h3>
-          <p class="mt-2 text-sm leading-relaxed text-go/70">{{ f.d }}</p>
+          <div class="mx-auto mb-2.5 text-3xl glow-icon">{{ f.i }}</div>
+          <h3 class="font-serif text-lg text-do font-semibold">{{ f.t }}</h3>
+          <p class="mt-1.5 text-xs leading-relaxed text-go/70">{{ f.d }}</p>
         </div>
       </div>
     </section>
+
+    <!-- Nhạc nền thiền -->
+    <ClientOnly>
+      <MusicToggle />
+    </ClientOnly>
   </main>
 </template>

@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { ref, computed, watch, onBeforeUnmount } from 'vue'
 import { useSound } from '~/composables/useSound'
+import { usePracticeJournal } from '~/composables/usePracticeJournal'
 
 const { playChime } = useSound()
+const { addIncense } = usePracticeJournal()
 
 const options = [1, 3, 5]
 const count = ref(3)
@@ -70,6 +72,7 @@ function light() {
   lit.value = true
   burning.value = true
   playChime()
+  addIncense(count.value)
   // Nhang cháy tàn dần trong ~26s rồi tắt, có thể thắp lại
   window.setTimeout(() => {
     burning.value = false

@@ -1,0 +1,28 @@
+{
+  "name": "Đi Chùa Online · Viếng chùa, cầu an, tu tập",
+  "short_name": "Đi Chùa Onl",
+  "description": "Trải nghiệm viếng chùa, thắp nhang, niệm Phật 108 hạt, toạ thiền, thả cá Koi, thả hoa đăng và cầu an trong không gian thiền tịnh.",
+  "start_url": "/",
+  "id": "/",
+  "display": "standalone",
+  "background_color": "#F5EFE0",
+  "theme_color": "#8B2E2E",
+  "orientation": "portrait-primary",
+  "lang": "vi",
+  "categories": ["lifestyle", "spirituality"],
+  "icons": [
+    {
+      "src": "/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
+

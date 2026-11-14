@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+  <rect width="192" height="192" rx="42" fill="#8B2E2E" />
+  <circle cx="96" cy="96" r="76" fill="none" stroke="#C9A356" stroke-width="3" stroke-dasharray="6 4" opacity="0.6" />
+  <!-- Hoa sen vàng rực rỡ -->
+  <g transform="translate(96, 98) scale(1.6)">
+    <!-- Cánh sen ngoài -->
+    <path d="M0 -22 C-18 -10 -26 12 0 20 C26 12 18 -10 0 -22 Z" fill="#E6C265" />
+    <path d="M-8 -15 C-26 -2 -28 16 -4 20 C-6 10 -4 0 -8 -15 Z" fill="#C9A356" />
+    <path d="M8 -15 C26 -2 28 16 4 20 C6 10 4 0 8 -15 Z" fill="#C9A356" />
+    <!-- Cánh sen trong -->
+    <path d="M0 -26 C-10 -15 -14 6 0 15 C14 6 10 -15 0 -26 Z" fill="#FFEAA7" />
+    <!-- Tâm sen -->
+    <circle cx="0" cy="5" r="3.5" fill="#8B2E2E" />
+  </g>
+</svg>
+

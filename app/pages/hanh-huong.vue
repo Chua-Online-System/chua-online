@@ -1,11 +1,21 @@
 <script setup lang="ts">
 // Trải nghiệm 3D: leo núi, qua cổng tam quan, cởi dép, vào chùa thờ cúng.
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useAuth } from '~/composables/useAuth'
+import TempleMapModal from '~/components/navigation/TempleMapModal.vue'
+import FishPondCanvas from '~/components/ecosystem/FishPondCanvas.vue'
+import BodhiGarden from '~/components/ecosystem/BodhiGarden.vue'
+import LanternRiver from '~/components/ecosystem/LanternRiver.vue'
+import LotusBlessingModal from '~/components/ecosystem/LotusBlessingModal.vue'
+import PracticeJournalModal from '~/components/profile/PracticeJournalModal.vue'
+import PracticeHallModal from '~/components/practice/PracticeHallModal.vue'
 
 const { current, cloudEnabled, init, enterAsGuest, signUp, signIn, signOut } = useAuth()
 
-const activePanel = ref<string>('') // incense | bell | merit | prayer | fortune
+const activePanel = ref<string>('')
+const practiceTab = ref<'beads' | 'meditation' | 'sutras' | 'dharma'>('beads')
 const showGate = ref(true) // cửa "tự cấp tài khoản" trước khi vào
+
 // khách đã lưu -> vào thẳng, không nháy cửa tài khoản
 if (import.meta.client) { try { if (localStorage.getItem('dco.pilgrim')) showGate.value = false } catch {} }
 
@@ -41,13 +51,65 @@ async function submitAuth() {
 }
 
 function onInteract(action: string) {
-  activePanel.value = action
+  if (action === 'route_chua') {
+    navigateTo('/chua')
+    return
+  }
+  if (action === 'route_3d') {
+    closePanel()
+    return
+  }
+  if (action === 'modal_fish' || action === 'fish') activePanel.value = 'fish'
+  else if (action === 'modal_bodhi' || action === 'bodhi') activePanel.value = 'bodhi'
+  else if (action === 'modal_lanterns' || action === 'lanterns') activePanel.value = 'lanterns'
+  else if (action === 'modal_lotus' || action === 'lotus') activePanel.value = 'lotus'
+  else if (action === 'modal_map' || action === 'map') activePanel.value = 'map'
+  else if (action === 'modal_journal' || action === 'journal') activePanel.value = 'journal'
+  else if (action === 'modal_incense' || action === 'incense') activePanel.value = 'incense'
+  else if (action === 'modal_bell' || action === 'bell') activePanel.value = 'bell'
+  else if (action === 'modal_merit' || action === 'merit') activePanel.value = 'merit'
+  else if (action === 'modal_prayer' || action === 'prayer') activePanel.value = 'prayer'
+  else if (action === 'modal_fortune' || action === 'fortune') activePanel.value = 'fortune'
+  else if (action === 'modal_practice' || action === 'practice') {
+    practiceTab.value = 'beads'
+    activePanel.value = 'practice'
+  }
+  else if (action === 'modal_beads' || action === 'beads') {
+    practiceTab.value = 'beads'
+    activePanel.value = 'practice'
+  }
+  else if (action === 'modal_meditation' || action === 'meditation') {
+    practiceTab.value = 'meditation'
+    activePanel.value = 'practice'
+  }
+  else if (action === 'modal_sutras' || action === 'modal_sutra' || action === 'sutra') {
+    practiceTab.value = 'sutras'
+    activePanel.value = 'practice'
+  }
+  else if (action === 'modal_dharma' || action === 'dharma') {
+    practiceTab.value = 'dharma'
+    activePanel.value = 'practice'
+  }
+  else {
+    activePanel.value = action
+  }
 }
 function closePanel() { activePanel.value = '' }
 
+const isAltarPanel = computed(() =>
+  ['incense', 'bell', 'merit', 'prayer', 'fortune'].includes(activePanel.value)
+)
+
+const isFullModal = computed(() =>
+  ['practice', 'map', 'fish', 'bodhi', 'lanterns', 'lotus', 'journal'].includes(activePanel.value)
+)
+
 const panelTitle = computed(() => ({
-  incense: '🪔 Thắp nhang', bell: '🔔 Thỉnh chuông', merit: '💛 Cúng dường',
-  prayer: '🙏 Cầu an', fortune: '🎋 Xin xăm', sutra: '📿 Tụng kinh'
+  incense: '🪔 Thắp nhang',
+  bell: '🔔 Thỉnh chuông',
+  merit: '💛 Cúng dường',
+  prayer: '🙏 Cầu an',
+  fortune: '🎋 Xin xăm'
 }[activePanel.value] || ''))
 
 async function doSignOut() { await signOut(); showGate.value = true }
@@ -90,15 +152,33 @@ async function doSignOut() { await signOut(); showGate.value = true }
       </div>
     </transition>
 
-    <!-- thanh người dùng góc trên -->
+    <!-- thanh điều hướng & người dùng góc trên -->
     <div v-if="!showGate && current" class="userbar">
-      <span>🙏 {{ current.name }}</span>
-      <button @click="doSignOut">Rời chùa</button>
+      <NuxtLink to="/chua" class="btn-hud" title="Về Chánh điện 2D">
+        <span>🪷</span>
+        <span class="hidden sm:inline">Chánh điện</span>
+      </NuxtLink>
+      <button @click="onInteract('map')" class="btn-hud" title="Bản đồ chùa 2.5D">
+        <span>🗺️</span>
+        <span class="hidden sm:inline">Bản đồ</span>
+      </button>
+      <button @click="onInteract('journal')" class="btn-hud" title="Nhật ký tu tập">
+        <span>🏮</span>
+        <span class="hidden sm:inline">Nhật ký</span>
+      </button>
+      <span class="divider">|</span>
+      <span class="name">🙏 {{ current.name }}</span>
+      <button @click="doSignOut" class="btn-signout" title="Rời chùa">Rời chùa</button>
     </div>
 
-    <!-- Bảng thờ cúng (tái dùng component 2D hiện có) -->
+    <!-- Nhạc nền thiền với volume & soundscape -->
+    <ClientOnly>
+      <MusicToggle />
+    </ClientOnly>
+
+    <!-- 1. Bảng thờ cúng nơi điện thờ (Nhang, Chuông, Cúng dường, Cầu an, Xin xăm) -->
     <transition name="fade">
-      <div v-if="activePanel" class="panel-overlay" @click.self="closePanel">
+      <div v-if="isAltarPanel" class="panel-overlay" @click.self="closePanel">
         <div class="panel-card">
           <div class="panel-head">
             <h2>{{ panelTitle }}</h2>
@@ -110,8 +190,41 @@ async function doSignOut() { await signOut(); showGate.value = true }
             <MeritBox v-else-if="activePanel === 'merit'" />
             <PrayerBook v-else-if="activePanel === 'prayer'" />
             <FortuneStick v-else-if="activePanel === 'fortune'" />
-            <SutraChanting v-else-if="activePanel === 'sutra'" />
           </div>
+        </div>
+      </div>
+    </transition>
+
+    <!-- 2. Không gian độc lập (Nhà Tụng Kinh & Thiền, Bản Đồ, Sinh Thái, Nhật Ký) -->
+    <transition
+      enter-active-class="transition duration-300 ease-out"
+      enter-from-class="opacity-0"
+      enter-to-class="opacity-100"
+      leave-active-class="transition duration-200 ease-in"
+      leave-from-class="opacity-100"
+      leave-to-class="opacity-0"
+    >
+      <div
+        v-if="isFullModal"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/65 p-4 backdrop-blur-sm overflow-y-auto"
+        @click.self="closePanel"
+      >
+        <div class="w-full max-w-3xl my-auto animate-fade-up">
+          <PracticeHallModal
+            v-if="activePanel === 'practice'"
+            :initial-tab="practiceTab"
+            @close="closePanel"
+          />
+          <TempleMapModal
+            v-else-if="activePanel === 'map'"
+            @close="closePanel"
+            @select-zone="onInteract"
+          />
+          <FishPondCanvas v-else-if="activePanel === 'fish'" @close="closePanel" />
+          <BodhiGarden v-else-if="activePanel === 'bodhi'" @close="closePanel" />
+          <LanternRiver v-else-if="activePanel === 'lanterns'" @close="closePanel" />
+          <LotusBlessingModal v-else-if="activePanel === 'lotus'" @close="closePanel" />
+          <PracticeJournalModal v-else-if="activePanel === 'journal'" @close="closePanel" />
         </div>
       </div>
     </transition>
@@ -154,11 +267,26 @@ async function doSignOut() { await signOut(); showGate.value = true }
 .note { font-size: .78rem; opacity: .6; margin-top: 16px; }
 
 .userbar {
-  position: fixed; top: 16px; left: 16px; z-index: 20; display: flex; gap: 10px; align-items: center;
-  background: rgba(40,26,16,.6); color: #f5efe0; padding: 8px 14px; border-radius: 999px;
-  border: 1px solid rgba(201,163,86,.4); backdrop-filter: blur(6px); font-size: .9rem;
+  position: fixed; top: 16px; left: 16px; z-index: 20; display: flex; gap: 8px; align-items: center;
+  background: rgba(36,22,14,.75); color: #f5efe0; padding: 6px 14px; border-radius: 999px;
+  border: 1px solid rgba(201,163,86,.45); backdrop-filter: blur(8px); font-size: .88rem;
+  box-shadow: 0 4px 20px rgba(0,0,0,.35);
 }
-.userbar button { background: rgba(255,255,255,.12); border: none; color: #f5efe0; padding: 5px 12px; border-radius: 999px; cursor: pointer; font-size: .82rem; }
+.btn-hud {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: rgba(255,255,255,.1); border: 1px solid rgba(201,163,86,.3);
+  color: #f5efe0; padding: 5px 12px; border-radius: 999px; cursor: pointer;
+  font-size: .82rem; text-decoration: none; transition: all .2s;
+}
+.btn-hud:hover { background: rgba(201,163,86,.25); color: #fff; border-color: #c9a356; }
+.divider { opacity: .3; margin: 0 2px; }
+.name { font-weight: 500; color: #f3e6c4; }
+.btn-signout {
+  background: rgba(139,46,46,.4); border: 1px solid rgba(139,46,46,.6);
+  color: #ffc4be; padding: 4px 10px; border-radius: 999px; cursor: pointer; font-size: .78rem;
+  transition: all .2s;
+}
+.btn-signout:hover { background: rgba(139,46,46,.7); color: #fff; }
 
 .panel-overlay { position: fixed; inset: 0; z-index: 25; display: grid; place-items: center; padding: 20px; background: rgba(10,6,3,.6); backdrop-filter: blur(4px); }
 .panel-card {

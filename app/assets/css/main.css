@@ -76,3 +76,40 @@
     transition-duration: 0.001ms !important;
   }
 }
+
+/* ------- Chế độ Thiền Đêm Dịu Mắt (Zen Night Mode) ------- */
+html.zen-night body {
+  background-color: #140f0a !important;
+  color: #ede2cf !important;
+  background-image:
+    radial-gradient(120% 80% at 50% -10%, rgba(201, 163, 86, 0.12), transparent 55%),
+    radial-gradient(80% 60% at 50% 120%, rgba(139, 46, 46, 0.15), transparent 60%) !important;
+}
+
+html.zen-night header {
+  background-color: rgba(20, 15, 10, 0.88) !important;
+  border-color: rgba(201, 163, 86, 0.25) !important;
+}
+
+html.zen-night .card-zen {
+  background-color: rgba(30, 22, 15, 0.82) !important;
+  border-color: rgba(201, 163, 86, 0.25) !important;
+  color: #ede2cf !important;
+}
+
+html.zen-night .text-go {
+  color: #ede2cf !important;
+}
+html.zen-night .text-go\/75,
+html.zen-night .text-go\/70,
+html.zen-night .text-go\/80 {
+  color: rgba(237, 226, 207, 0.75) !important;
+}
+html.zen-night .text-go\/50,
+html.zen-night .text-go\/60 {
+  color: rgba(237, 226, 207, 0.55) !important;
+}
+html.zen-night .bg-kem {
+  background-color: #1d1610 !important;
+}
+

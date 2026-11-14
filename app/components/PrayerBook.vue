@@ -1,8 +1,12 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { usePrayers } from '~/composables/usePrayers'
+import { usePracticeJournal } from '~/composables/usePracticeJournal'
+import { useModeration } from '~/composables/useModeration'
 
 const { prayers, loading, usingCloud, fetchRecent, addPrayer } = usePrayers()
+const journal = usePracticeJournal()
+const { sanitize, checkRateLimit } = useModeration()
 
 const name = ref('')
 const wish = ref('')
@@ -33,13 +37,26 @@ function timeAgo(iso?: string): string {
 
 async function submit() {
   error.value = ''
-  if (!wish.value.trim()) {
-    error.value = 'Xin nhập lời nguyện của bạn.'
+  
+  // Kiểm duyệt nội dung
+  const modWish = sanitize(wish.value)
+  if (!modWish.isValid) {
+    error.value = modWish.error || 'Nội dung không hợp lệ.'
     return
   }
+
+  // Kiểm tra giới hạn tần suất gửi
+  const rate = checkRateLimit('prayer', 3, 300)
+  if (!rate.allowed) {
+    error.value = `Xin hãy lắng lòng chờ ${rate.remainingSeconds} giây trước khi gửi tiếp.`
+    return
+  }
+
   sending.value = true
   try {
-    await addPrayer(name.value, wish.value)
+    const cleanName = sanitize(name.value || 'Ẩn danh').cleaned
+    await addPrayer(cleanName, modWish.cleaned)
+    journal.addPrayer()
     wish.value = ''
     name.value = ''
     justSent.value = true
