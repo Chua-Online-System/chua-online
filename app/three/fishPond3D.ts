@@ -276,6 +276,12 @@ export function buildFishPond3D(
     }
   }
 
+  // 2 thềm dốc đá tiếp cận mố cầu (East ramp & West ramp)
+  // Giúp người chơi bước lên/xuống cầu mượt mà, loại bỏ mọi góc cạnh vấp ngã
+  const eastRamp = makeBox(2.2, 0.2, BRIDGE_W, new THREE.MeshStandardMaterial({ color: POND_COLORS.bridgeStone, roughness: 0.85 }), 12.25 + 1.1, 0.08, 0)
+  const westRamp = makeBox(2.2, 0.2, BRIDGE_W, new THREE.MeshStandardMaterial({ color: POND_COLORS.bridgeStone, roughness: 0.85 }), -12.25 - 1.1, 0.08, 0)
+  bridgeGroup.add(eastRamp, westRamp)
+
   // 2 mố trụ cầu đá cắm sâu vào lòng hồ
   for (const px of [-6.0, 6.0]) {
     const pier = makeBox(1.6, floorY - BED_Y + 0.5, BRIDGE_W + 0.4, new THREE.MeshStandardMaterial({ color: 0x4a453e, roughness: 0.95 }), px, (floorY + BED_Y) / 2 - floorY, 0)

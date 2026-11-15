@@ -45,7 +45,7 @@ export function createWorldColliders(): Collider[] {
   const lanternRadius = 0.52
   const lanterns = [
     { x: -34, z: 23.5 }, { x: -52, z: 23.5 }, { x: -68, z: 23.5 },
-    { x: -69, z: 10 }, { x: -69, z: -4 }, { x: -58, z: 6 }, { x: -58, z: -6 },
+    { x: -69, z: 13 }, { x: -50, z: 1 }, { x: -50, z: -9 }, { x: -80, z: 1 }, { x: -80, z: -9 },
     { x: 34, z: 23.5 }, { x: 52, z: 23.5 }, { x: 68, z: 23.5 },
     { x: 69, z: 10 }, { x: 69, z: -6 }, { x: 56, z: 6 }, { x: 56, z: -18 },
     { x: -36, z: -54 }, { x: 36, z: -54 }, { x: -10, z: -62 }, { x: 10, z: -62 },
@@ -54,6 +54,10 @@ export function createWorldColliders(): Collider[] {
   lanterns.forEach((l, i) => {
     list.push({ type: 'circle', x: l.x, z: l.z, radius: lanternRadius, name: `Thạch đăng ${i + 1}` })
   })
+
+  // Lan can đá Cầu vòm vượt Hồ Cá (ngăn không cho ngã xuống nước, chừa lối đi giữa Z: -5.7 đến -2.3)
+  list.push({ type: 'box', minX: -77.5, maxX: -52.5, minZ: -6.4, maxZ: -5.8, name: 'Lan can Nam Cầu đá' })
+  list.push({ type: 'box', minX: -77.5, maxX: -52.5, minZ: -2.2, maxZ: -1.6, name: 'Lan can Bắc Cầu đá' })
 
   // 3. RỪNG TRÚC XANH THIỀN TỊNH (16 rặng trúc xanh)
   const bambooRadius = 1.35
@@ -172,9 +176,11 @@ export function isPointBlocked(x: number, z: number, radius = PLAYER_RADIUS): bo
 
   // 2. Va chạm mặt nước Hồ Sen: chỉ được đi trên cầu đá vòm
   const pRelX = (x - (-65)) / 13.5
-  const pRelZ = (z - (-4)) / 8.8
+  const pRelZ = (z - (-4)) / 11.5
   const inPondWater = (pRelX * pRelX + pRelZ * pRelZ) < 1.0
-  const onBridge = Math.abs(z - (-4)) <= 2.2 && x >= -77.5 && x <= -52.5
+  // Cầu đá nối bờ Đông (X: -49.0) sang bờ Tây (X: -81.0):
+  // Phủ rộng ra ngoài mép bờ hồ để loại bỏ hoàn toàn vùng kẹt ở 2 mố cầu
+  const onBridge = Math.abs(z - (-4)) <= 1.85 && x >= -81.5 && x <= -48.5
   if (inPondWater && !onBridge) {
     return true
   }
@@ -290,12 +296,16 @@ export function resolveMovement(
  * Khớp 100% với các khối hình học thực tế trong cảnh 3D.
  */
 export function getGroundHeight(x: number, z: number, floorY: number): number {
-  // 1. Cầu đá vòm vượt hồ cá
-  const onBridge = Math.abs(z - (-4)) <= 2.2 && x >= -77.25 && x <= -52.75
-  if (onBridge) {
+  // 1. Cầu đá vòm vượt hồ cá (X: -79.5 đến -50.5, Z: -4)
+  if (Math.abs(z - (-4)) <= 1.95 && x >= -79.5 && x <= -50.5) {
     const bt = (x - (-77.25)) / 24.5
-    const archElev = Math.sin(Math.max(0, Math.min(1, bt)) * Math.PI) * 1.05 + 0.22
-    return floorY + archElev
+    const clampedBt = Math.max(0, Math.min(1, bt))
+    const archElev = Math.sin(clampedBt * Math.PI) * 1.05 + 0.22
+    // Bậc ramp thoải ở 2 mố cầu để tiếp đất êm ái
+    let ramp = 1
+    if (x < -77.25) ramp = Math.max(0, (x - (-79.5)) / 2.25)
+    else if (x > -52.75) ramp = Math.max(0, (-50.5 - x) / 2.25)
+    return floorY + archElev * ramp
   }
 
   // 2. Chánh Điện: Thềm đá ngũ cấp và sàn gỗ bên trong

@@ -81,22 +81,47 @@ export function buildNorthSanctuary3D(
   const matBronze = new THREE.MeshStandardMaterial({ color: C.bronzeStatue, roughness: 0.35, metalness: 0.7 })
 
   // =========================================================================
-  // 1. BẾN THẢ HOA ĐĂNG SÔNG TRĂNG (Tọa độ: X: 0, Z: -86 đến -104)
+  // 1. BẾN THẢ HOA ĐĂNG SÔNG TRĂNG (Tọa độ: X: 0, Z: -80 đến -120)
   // =========================================================================
-  const RIVER_Z = -92
-  const RIVER_W = 180
-  const RIVER_DEPTH = 24
-  const WATER_Y = floorY - 0.95
+  const RIVER_Z = -96
+  const RIVER_W = 196
+  const RIVER_DEPTH = 44
+  const WATER_Y = floorY - 0.85
+
+  // --- 1.0. Đáy sông Sông Trăng & Vách núi bờ Bắc đối diện ---
+  const riverBed = makeBox(
+    RIVER_W,
+    0.4,
+    RIVER_DEPTH + 8,
+    new THREE.MeshStandardMaterial({ color: 0x0c151c, roughness: 0.95 }),
+    0,
+    floorY - 2.8,
+    RIVER_Z
+  )
+  northGroup.add(riverBed)
+
+  // Bờ sông phía đối diện (North Bank Cliffs) tạo hẻm núi tráng lệ
+  const farBank = makeBox(
+    RIVER_W + 16,
+    8.0,
+    38,
+    new THREE.MeshStandardMaterial({ color: 0x384e32, roughness: 0.95 }),
+    0,
+    floorY + 2.0,
+    -134
+  )
+  northGroup.add(farBank)
 
   // --- 1.1. Mặt nước sông đêm phản chiếu ánh trăng ---
-  const riverGeo = new THREE.PlaneGeometry(RIVER_W, RIVER_DEPTH, 48, 16)
+  const riverGeo = new THREE.PlaneGeometry(RIVER_W, RIVER_DEPTH, 48, 20)
   riverGeo.rotateX(-Math.PI / 2)
   const riverMat = new THREE.MeshStandardMaterial({
-    color: C.riverWater,
-    roughness: 0.15,
-    metalness: 0.65,
+    color: 0x16384e,
+    roughness: 0.08,
+    metalness: 0.55,
     transparent: true,
-    opacity: 0.92
+    opacity: 0.92,
+    side: THREE.DoubleSide
   })
   const riverMesh = new THREE.Mesh(riverGeo, riverMat)
   riverMesh.position.set(0, WATER_Y, RIVER_Z)

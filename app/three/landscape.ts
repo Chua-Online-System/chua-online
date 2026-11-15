@@ -348,17 +348,26 @@ export function buildExpandedLandscape(
   root.add(landscapeGroup)
 
   // =========================================================================
-  // 1. ĐẠI CAO NGUYÊN ĐỈNH NÚI (The Grand Mountain Plateau) - 190m x 190m
+  // 1. ĐẠI CAO NGUYÊN ĐỈNH NÚI (The Grand Mountain Plateau)
+  // Tạo thảm cỏ thiền tịnh, chừa khoảng trống lòng hồ cá (-82 đến -48, Z: -18 đến 10)
+  // và kết thúc tại bờ Nam sông Trăng (Z = -80) để lộ toàn cảnh dòng sông đêm.
   // =========================================================================
-  // Thảm cỏ thiền tịnh rộng lớn trải dài toàn bộ quần thể chùa
-  const plateauGrass = makeBox(188, 1.4, 184, M.grassPlateau(), 0, floorY - 0.72, -16)
-  landscapeGroup.add(plateauGrass)
+  // Khối đại cao nguyên Trung Tâm & Cánh Đông (X: -48 đến +94, Z: -80 đến +60)
+  const plateauEast = makeBox(142, 1.4, 140, M.grassPlateau(), 23, floorY - 0.72, -10)
+  // Khối Cánh Tây Nam (Phía Nam Hồ Cá: X: -94 đến -48, Z: 10 đến +60)
+  const plateauWestSouth = makeBox(46, 1.4, 50, M.grassPlateau(), -71, floorY - 0.72, 35)
+  // Khối Cánh Tây Bắc (Phía Bắc Hồ Cá: X: -94 đến -48, Z: -80 đến -18)
+  const plateauWestNorth = makeBox(46, 1.4, 62, M.grassPlateau(), -71, floorY - 0.72, -49)
+  // Khối Cánh Tây Biên (Bờ Tây Hồ Cá: X: -94 đến -82, Z: -18 đến 10)
+  const plateauWestFar = makeBox(12, 1.4, 28, M.grassPlateau(), -88, floorY - 0.72, -4)
+  landscapeGroup.add(plateauEast, plateauWestSouth, plateauWestNorth, plateauWestFar)
 
-  // Lớp đồi đất nhung xanh viền quanh tạo độ gợn sóng tự nhiên
-  const terraceWest = makeBox(70, 0.25, 90, M.grassLush(), -56, floorY + 0.05, 0)
-  const terraceEast = makeBox(70, 0.25, 90, M.grassLush(), 56, floorY + 0.05, 0)
-  const terraceNorth = makeBox(110, 0.25, 60, M.grassLush(), 0, floorY + 0.05, -62)
-  landscapeGroup.add(terraceWest, terraceEast, terraceNorth)
+  // Lớp đồi đất nhung xanh viền quanh tạo độ gợn sóng tự nhiên (không đè lên hồ và sông)
+  const terraceWestSouth = makeBox(42, 0.22, 42, M.grassLush(), -68, floorY + 0.05, 36)
+  const terraceWestNorth = makeBox(42, 0.22, 38, M.grassLush(), -68, floorY + 0.05, -50)
+  const terraceEast = makeBox(68, 0.25, 88, M.grassLush(), 56, floorY + 0.05, 0)
+  const terraceNorth = makeBox(96, 0.22, 28, M.grassLush(), 0, floorY + 0.05, -62)
+  landscapeGroup.add(terraceWestSouth, terraceWestNorth, terraceEast, terraceNorth)
 
   // =========================================================================
   // 2. MẠNG LƯỚI ĐẠI LỘ LÁT ĐÁ (Grand Stone Pathway Network)
@@ -370,19 +379,23 @@ export function buildExpandedLandscape(
   const pathWestGravel = makeBox(48, 0.06, 6.4, M.stoneGravel(), -46, floorY + 0.03, 20)
   landscapeGroup.add(pathWestMain, pathWestGravel)
 
-  // Đoạn 2: Từ (X: -68, Z: 20) bẻ góc vuông dẫn lên hướng Bắc tới Hồ Cá (X: -65, Z: -2)
-  const pathWestToPond = makeBox(5.2, 0.12, 26, M.stoneFlag(), -66, floorY + 0.06, 7)
-  const pathWestToPondGravel = makeBox(6.4, 0.06, 28, M.stoneGravel(), -66, floorY + 0.03, 7)
+  // Đoạn 2: Từ (X: -68, Z: 20) bẻ góc vuông dẫn lên hướng Bắc tới Hồ Cá (X: -66, Z: 11)
+  const pathWestToPond = makeBox(5.2, 0.12, 20, M.stoneFlag(), -66, floorY + 0.06, 11)
+  const pathWestToPondGravel = makeBox(6.4, 0.06, 22, M.stoneGravel(), -66, floorY + 0.03, 11)
   landscapeGroup.add(pathWestToPond, pathWestToPondGravel)
 
-  // Đoạn 3: Lối đi tắt từ hông Chánh Điện (X: -32, Z: -12) sang Hồ Cá (X: -62, Z: -2)
-  const pathWestDiagonal = makeBox(32, 0.1, 4.2, M.stoneFlag(), -48, floorY + 0.06, -7)
+  // Đoạn 3: Lối đi tắt từ hông Chánh Điện (X: -32, Z: -12) sang Hồ Cá (X: -49, Z: -4)
+  const pathWestDiagonal = makeBox(24, 0.1, 4.2, M.stoneFlag(), -40, floorY + 0.06, -7)
   landscapeGroup.add(pathWestDiagonal)
 
-  // Quảng trường đá nhỏ trước Bến Hồ Cá (X: -65, Z: 0)
-  const pondPlaza = makeBox(18, 0.14, 18, M.stoneFlag(), -65, floorY + 0.07, 0)
-  const pondPlazaBorder = makeBox(19.2, 0.08, 19.2, M.stoneBorder(), -65, floorY + 0.04, 0)
-  landscapeGroup.add(pondPlaza, pondPlazaBorder)
+  // Bờ Nam Hồ Cá: Đại lộ lát đá đón khách từ Cánh Nam sang ngắm hoa sen & cá Koi
+  const pondSouthWalk = makeBox(28, 0.12, 5.0, M.stoneFlag(), -65, floorY + 0.06, 11)
+  const pondSouthGravel = makeBox(30, 0.06, 6.2, M.stoneGravel(), -65, floorY + 0.03, 11)
+  // Bờ Đông Hồ Cá: Thềm đá đón đầu cầu vòm phía Đông (nối vào lối đi)
+  const pondEastApproach = makeBox(6.0, 0.12, 12, M.stoneFlag(), -49, floorY + 0.06, -4)
+  // Bờ Tây Hồ Cá: Thềm đá đón đầu cầu vòm phía Tây
+  const pondWestApproach = makeBox(6.0, 0.12, 10, M.stoneFlag(), -81, floorY + 0.06, -4)
+  landscapeGroup.add(pondSouthWalk, pondSouthGravel, pondEastApproach, pondWestApproach)
 
   // --- TRỤC NỐI SANG CÁNH ĐÔNG (Lối sang Vườn Bồ Đề & Lầu Đại Hồng Chung) ---
   // Đoạn 1: Từ sân chùa (X: 24, Z: 20) chạy thẳng sang Đông đến X: +68
@@ -454,10 +467,11 @@ export function buildExpandedLandscape(
   landscapeGroup.add(buildStoneLantern(-34, floorY, 23.5, updaters))
   landscapeGroup.add(buildStoneLantern(-52, floorY, 23.5, updaters))
   landscapeGroup.add(buildStoneLantern(-68, floorY, 23.5, updaters))
-  landscapeGroup.add(buildStoneLantern(-69, floorY, 10, updaters))
-  landscapeGroup.add(buildStoneLantern(-69, floorY, -4, updaters))
-  landscapeGroup.add(buildStoneLantern(-58, floorY, 6, updaters))
-  landscapeGroup.add(buildStoneLantern(-58, floorY, -6, updaters))
+  landscapeGroup.add(buildStoneLantern(-69, floorY, 13, updaters)) // Bờ Nam hồ
+  landscapeGroup.add(buildStoneLantern(-50, floorY, 1, updaters))   // Trụ đón mố cầu Đông (bên phải lối lên)
+  landscapeGroup.add(buildStoneLantern(-50, floorY, -9, updaters))  // Trụ đón mố cầu Đông (bên trái lối lên)
+  landscapeGroup.add(buildStoneLantern(-80, floorY, 1, updaters))   // Trụ đón mố cầu Tây
+  landscapeGroup.add(buildStoneLantern(-80, floorY, -9, updaters))  // Trụ đón mố cầu Tây
 
   // Thạch đăng dọc đại lộ Cánh Đông (soi sáng lối sang Vườn Bồ Đề & Lầu Chuông)
   landscapeGroup.add(buildStoneLantern(34, floorY, 23.5, updaters))
