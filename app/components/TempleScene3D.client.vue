@@ -2,6 +2,7 @@
 import * as THREE from 'three'
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
 import { buildWorld, makeSandalPair, type World } from '~/three/world'
+import { resolveMovement, getGroundHeight } from '~/three/physics'
 import { useMultiplayer } from '~/composables/useMultiplayer'
 import { useFishPond } from '~/composables/useFishPond'
 import { useSound } from '~/composables/useSound'
@@ -28,7 +29,8 @@ function ensureAudioStarted() {
 
 function handleTeleport(target: { x: number; z: number; name: string }) {
   if (phase.value !== 'inside') phase.value = 'inside'
-  avatarPos.set(target.x, world.floorY, target.z)
+  const targetY = getGroundHeight(target.x, target.z, world.floorY)
+  avatarPos.set(target.x, targetY, target.z)
   playerCoords.x = target.x
   playerCoords.z = target.z
   cam.yaw = 0
@@ -232,7 +234,8 @@ function updateCamera(lerpK = 1) {
   const target = avatarPos.clone().add(new THREE.Vector3(0, 1.7, 0))
   const desired = target.clone().add(off)
   // Ngăn camera tụt xuống dưới mặt sàn (giữ camera luôn trên cao)
-  if (desired.y < world.floorY + 0.8) desired.y = world.floorY + 0.8
+  const groundY = world ? getGroundHeight(desired.x, desired.z, world.floorY) : (world?.floorY || 18)
+  if (desired.y < groundY + 0.8) desired.y = groundY + 0.8
   if (lerpK >= 1) camera.position.copy(desired); else camera.position.lerp(desired, lerpK)
   camera.lookAt(target)
 }
@@ -275,7 +278,8 @@ function setKneel(on: boolean) {
 }
 function sitDown() {
   if (nearMedPad) {
-    avatarPos.set(nearMedPad.x, world.floorY, nearMedPad.z)
+    const targetY = getGroundHeight(nearMedPad.x, nearMedPad.z, world.floorY)
+    avatarPos.set(nearMedPad.x, targetY, nearMedPad.z)
     avatarYaw = 0 // quay mặt về tượng Phật vách Bắc
     walkAmt = 0; sitting.value = true
     placeAvatar(); avatar.position.y = avatarPos.y - 0.35; setKneel(true)
@@ -283,7 +287,8 @@ function sitDown() {
     return
   }
   if (!nearMat) return
-  avatarPos.set(nearMat.x, world.floorY, nearMat.z)
+  const targetY = getGroundHeight(nearMat.x, nearMat.z, world.floorY)
+  avatarPos.set(nearMat.x, targetY, nearMat.z)
   avatarYaw = Math.PI // quay mặt vào ban thờ
   walkAmt = 0; sitting.value = true
   placeAvatar(); avatar.position.y = avatarPos.y - 0.5; setKneel(true)
@@ -479,7 +484,13 @@ function animate() {
     walkAmt = 1; walkPhase += dt * 9
     cam.yaw = avatarYaw + Math.PI; cam.pitch = 0.22
     placeAvatar(); animateLegs(); updateCamera(0.12)
-    if (climbT >= 1) { phase.value = 'inside'; avatarPos.set(fullPath[n].x, world.floorY, fullPath[n].z); cam.yaw = 0; cam.pitch = 0.25 } // tới cổng -> tự điều khiển
+    if (climbT >= 1) {
+      phase.value = 'inside'
+      const targetY = getGroundHeight(fullPath[n].x, fullPath[n].z, world.floorY)
+      avatarPos.set(fullPath[n].x, targetY, fullPath[n].z)
+      cam.yaw = 0
+      cam.pitch = 0.25
+    } // tới cổng -> tự điều khiển
   } else if (phase.value === 'inside') {
     const joyLen = Math.hypot(joyVec.x, joyVec.y)
     const joyOn = joyLen > 0.08
@@ -502,8 +513,11 @@ function animate() {
       if (joyOn) { move.add(right.clone().multiplyScalar(joyVec.x)); move.add(fwd.clone().multiplyScalar(-joyVec.y)) }
       if (move.lengthSq() > 0) {
         move.normalize()
-        let newX = THREE.MathUtils.clamp(avatarPos.x + move.x * speed, world.bounds.minX, world.bounds.maxX)
-        let newZ = THREE.MathUtils.clamp(avatarPos.z + move.z * speed, world.bounds.minZ, world.bounds.maxZ)
+
+        // Vật lý va chạm & Trượt tường (Wall Sliding Physics)
+        const resolved = resolveMovement(avatarPos.x, avatarPos.z, move.x, move.z, speed)
+        let newX = resolved.newX
+        let newZ = resolved.newZ
         
         // VẠCH CAM: vào lễ Chánh Điện phải cởi dép, ra về phải mang dép
         // Chỉ áp dụng khi đi qua cửa Đại Điện Tam Bảo (|X| <= 24)
@@ -517,34 +531,25 @@ function animate() {
           barrier.value = ''
         }
 
-        // Va chạm bờ hồ cá: không bước chân xuống nước, chỉ được đi trên cầu đá vòm vượt hồ
-        const pRelX = (newX - (-65)) / 13.5
-        const pRelZ = (newZ - (-4)) / 8.8
-        const inPondWater = (pRelX * pRelX + pRelZ * pRelZ) < 1.0
-        const onBridge = Math.abs(newZ - (-4)) <= 2.2 && newX >= -77.5 && newX <= -52.5
-        if (inPondWater && !onBridge) {
-          newX = avatarPos.x
-          newZ = avatarPos.z
+        const movedDistSq = (newX - avatarPos.x) * (newX - avatarPos.x) + (newZ - avatarPos.z) * (newZ - avatarPos.z)
+        if (movedDistSq > 1e-6) {
+          avatarYaw = Math.atan2(newX - avatarPos.x, newZ - avatarPos.z)
+          avatarPos.x = newX
+          avatarPos.z = newZ
+          const stepRate = isSprinting ? 15.5 : 10
+          walkAmt = Math.min(1, walkAmt + dt * (isSprinting ? 8 : 6))
+          walkPhase += dt * stepRate
+        } else {
+          // Bị cản cứng, chân dừng bước
+          walkAmt = Math.max(0, walkAmt - dt * 6)
         }
-
-        avatarPos.x = newX; avatarPos.z = newZ
-        avatarYaw = Math.atan2(move.x, move.z)
-        const stepRate = isSprinting ? 15.5 : 10
-        walkAmt = Math.min(1, walkAmt + dt * (isSprinting ? 8 : 6))
-        walkPhase += dt * stepRate
       } else {
         walkAmt = Math.max(0, walkAmt - dt * 6)
       }
 
-      // Độ cao nhân vật (theo vòm cầu đá khi bước qua hồ)
-      const onBridgeNow = Math.abs(avatarPos.z - (-4)) <= 2.2 && avatarPos.x >= -77.25 && avatarPos.x <= -52.75
-      if (onBridgeNow) {
-        const bt = (avatarPos.x - (-77.25)) / 24.5
-        const archElev = Math.sin(Math.max(0, Math.min(1, bt)) * Math.PI) * 1.05 + 0.22
-        avatarPos.y = THREE.MathUtils.lerp(avatarPos.y, world.floorY + archElev, dt * 10)
-      } else {
-        avatarPos.y = THREE.MathUtils.lerp(avatarPos.y, world.floorY, dt * 10)
-      }
+      // Độ cao nhân vật (theo địa hình: cầu đá vòm, thềm đá ngũ cấp, lầu chuông, gò bồ đề, bậc bến sông)
+      const targetGroundY = getGroundHeight(avatarPos.x, avatarPos.z, world.floorY)
+      avatarPos.y = THREE.MathUtils.lerp(avatarPos.y, targetGroundY, dt * 10)
       placeAvatar(); animateLegs()
 
       // Dynamic FOV khi chạy nhanh (tạo cảm giác lướt gió thênh thang)
@@ -573,7 +578,9 @@ function animate() {
         : nearMat ? '🧎 Ngồi quỳ' : (hit ? hit.label : '')
       updateCamera(0.2)
     } else {
-      placeAvatar(); avatar.position.y = avatarPos.y - 0.5
+      const curGroundY = getGroundHeight(avatarPos.x, avatarPos.z, world.floorY)
+      avatarPos.y = curGroundY - (nearMedPad ? 0.35 : 0.5)
+      placeAvatar()
       hoverLabel.value = '🧎 Đứng dậy'
       updateCamera(0.12)
     }
@@ -778,7 +785,8 @@ defineExpose({
     world?.northSanctuary?.releaseLantern(sender, text, type),
   teleportTo: (x: number, z: number) => {
     if (avatarPos && world) {
-      avatarPos.set(x, world.floorY, z)
+      const targetY = getGroundHeight(x, z, world.floorY)
+      avatarPos.set(x, targetY, z)
       playerCoords.x = x
       playerCoords.z = z
       cam.yaw = 0
