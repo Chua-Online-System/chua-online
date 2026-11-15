@@ -109,5 +109,31 @@ export function useSound() {
     noise.stop(now + dur)
   }
 
-  return { playBell, playChime, playWoodenFish }
+  function playMeritChime() {
+    const ac = getCtx()
+    if (!ac) return
+    const now = ac.currentTime
+    const master = ac.createGain()
+    master.gain.setValueAtTime(0.0001, now)
+    master.gain.exponentialRampToValueAtTime(0.26, now + 0.02)
+    master.gain.exponentialRampToValueAtTime(0.0001, now + 1.8)
+    master.connect(ac.destination)
+
+    // Tần số Solfeggio 528Hz (Tần số Chuyển hóa & Công đức thanh tịnh)
+    const tones = [528, 1056, 1584]
+    tones.forEach((f, i) => {
+      const osc = ac.createOscillator()
+      const g = ac.createGain()
+      osc.type = 'sine'
+      osc.frequency.setValueAtTime(f, now)
+      g.gain.setValueAtTime(0.35 / (i + 1), now)
+      g.gain.exponentialRampToValueAtTime(0.0001, now + 1.8 - i * 0.3)
+      osc.connect(g)
+      g.connect(master)
+      osc.start(now)
+      osc.stop(now + 2.0)
+    })
+  }
+
+  return { playBell, playChime, playWoodenFish, playMeritChime }
 }

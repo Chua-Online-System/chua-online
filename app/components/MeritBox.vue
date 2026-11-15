@@ -2,9 +2,11 @@
 import { ref, onMounted } from 'vue'
 import { useMerit } from '~/composables/useMerit'
 import { useSound } from '~/composables/useSound'
+import { useMeritSystem } from '~/composables/useMeritSystem'
 
 const { records, total, usingCloud, fetchRecent, addMerit } = useMerit()
 const { playChime } = useSound()
+const { earnMerit } = useMeritSystem()
 
 const amounts = [10000, 50000, 100000, 200000, 500000]
 const chosen = ref(0)
@@ -48,6 +50,8 @@ async function donate() {
 
   try {
     await addMerit(name.value, amount)
+    const meritPts = Math.min(100, Math.max(10, Math.round(amount / 5000)))
+    earnMerit('merit_donation', meritPts, `Cúng dường Tam Bảo ${fmt(amount)}đ`)
     blessed.value = true
     window.setTimeout(() => (blessed.value = false), 4000)
     chosen.value = 0

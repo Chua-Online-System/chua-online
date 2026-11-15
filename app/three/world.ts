@@ -195,14 +195,17 @@ function buildStairs(from: THREE.Vector3, to: THREE.Vector3, steps: number, widt
     const t = i / steps, yy = THREE.MathUtils.lerp(from.y, to.y, t) + 0.6, z = THREE.MathUtils.lerp(from.z, to.z, t)
     for (const s of [1, -1]) g.add(box(0.5, 1.4, 0.5, M.stone(), s * (width / 2 + 0.4), yy, z))
   }
-  const railLen = from.distanceTo(to)
+  const railLen = Math.max(2, from.distanceTo(to) - 1.2)
+  const angleX = Math.atan2(to.y - from.y, from.z - to.z)
   for (const side of [1, -1]) {
-    const rail = box(0.4, 0.4, railLen, M.stoneLight())
-    rail.position.set(side * (width / 2 + 0.4), (from.y + to.y) / 2 + 1.5, (from.z + to.z) / 2)
-    rail.rotation.x = Math.atan2(to.y - from.y, from.z - to.z); g.add(rail)
-    // Trụ đá kết thúc 2 đầu lan can cầu thang (tránh lộ chóp nhọn)
-    g.add(box(0.7, 1.6, 0.7, M.stone(), side * (width / 2 + 0.4), to.y + 0.8, to.z))
-    g.add(box(0.7, 1.6, 0.7, M.stone(), side * (width / 2 + 0.4), from.y + 0.8, from.z))
+    const rail = box(0.38, 0.38, railLen, M.stoneLight())
+    const midY = (from.y + to.y) / 2 + 1.15
+    const midZ = (from.z + to.z) / 2 + 0.5
+    rail.position.set(side * (width / 2 + 0.4), midY, midZ)
+    rail.rotation.x = angleX; g.add(rail)
+    // Trụ đá kết thúc 2 đầu lan can cầu thang (ngăn thanh vịn đâm xuyên mặt sân)
+    g.add(box(0.68, 1.4, 0.68, M.stone(), side * (width / 2 + 0.4), to.y + 0.7, to.z + 0.35))
+    g.add(box(0.68, 1.4, 0.68, M.stone(), side * (width / 2 + 0.4), from.y + 0.7, from.z))
   }
   return { group: g, path }
 }

@@ -131,13 +131,14 @@ Người chơi dùng điểm công đức tích lũy để quy đổi (mở khó
 
 ### PHASE 1: NỀN TẢNG DỮ LIỆU & BỘ MÁY CÔNG ĐỨC (MERIT ENGINE)
 > **Mục tiêu:** Xây dựng module quản lý điểm công đức, chuỗi điểm danh và tích hợp cơ chế cộng điểm vào mọi hoạt động hiện có.
+> **Trạng thái:** ✅ **ĐÃ HOÀN THÀNH TOÀN BỘ (100%)**
 
-- [ ] **Task 1.1: Tạo Composable `app/composables/useMeritSystem.ts`:**
+- [x] **Task 1.1: Tạo Composable `app/composables/useMeritSystem.ts`:**
   - Định nghĩa kiểu dữ liệu `MeritProfile`: `totalMerit`, `currentTier`, `streakDays`, `lastCheckInDate`, `todayPoints`, `unlockedOutfits`, `currentOutfit`, `history`.
   - Logic cộng điểm `earnMerit(action, amount, description)`.
   - Kiểm tra mức trần chống spam theo ngày (`dailyCap = 120`).
   - Hỗ trợ lưu trữ bền vững tại `localStorage` và tự động đồng bộ lên Supabase nếu có đăng nhập.
-- [ ] **Task 1.2: Tích hợp trigger cộng điểm vào các hành vi 3D:**
+- [x] **Task 1.2: Tích hợp trigger cộng điểm vào các hành vi 3D:**
   - Gõ chuông Chánh Điện & Lầu Chuông: `earnMerit('bell_ring', 5, 'Thỉnh Đại Hồng Chung')`.
   - Rắc mồi cho cá Koi: `earnMerit('fish_feed', 3, 'Rắc mồi cho cá')`.
   - Phóng sinh cá Koi: `earnMerit('fish_release', 15, 'Phóng sinh cá Koi')`.
@@ -145,10 +146,12 @@ Người chơi dùng điểm công đức tích lũy để quy đổi (mở khó
   - Tưới nước cội Bồ Đề: `earnMerit('bodhi_water', 10, 'Tưới nước Bồ Đề')`.
   - Treo lụa ước nguyện: `earnMerit('bodhi_ribbon', 10, 'Treo lụa Bồ Đề')`.
   - Gõ mõ tụng kinh: `earnMerit('wooden_fish', 5, 'Gõ mõ chánh niệm')`.
-  - Tọa thiền kiết già: tính theo timer (mỗi 3 phút cộng 10 điểm).
-- [ ] **Task 1.3: Hiệu ứng Toast thông báo công đức & thăng cấp:**
-  - Toast mạ vàng kèm âm thanh chuông thanh thoát mỗi khi nhận công đức.
-  - Hộp thông báo đặc biệt khi thăng cấp tâm linh (VD: *"Chúc mừng bạn đã đạt Cấp 3: Bồ Đề Tâm Khởi – Khai mở Hào quang Kim Sắc!"*).
+  - Tọa thiền kiết già: tính theo timer (mỗi 1 phút / 3 phút cộng 10 điểm).
+  - Thắp hương, cúng dường, đọc kinh: tích hợp trigger công đức toàn diện.
+- [x] **Task 1.3: Hiệu ứng Toast thông báo công đức & thăng cấp:**
+  - Toast mạ vàng kèm âm thanh chuông thanh thoát (`playMeritChime` Solfeggio 528Hz) mỗi khi nhận công đức.
+  - Hộp thông báo đặc biệt khi thăng cấp tâm linh (`MeritLevelUpModal.vue`) khai mở chi tiết Hào quang 3D tương ứng.
+  - Nút HUD Sổ Công Đức (`MeritProfileModal.vue`) hiển thị trực quan huy hiệu cấp bậc, chuỗi streak và tiến trình điểm ngày.
 
 ---
 
@@ -267,3 +270,4 @@ CREATE TABLE IF NOT EXISTS user_merit_profiles (
 1. **Gia tăng mạnh mẽ mức độ gắn bó (User Retention):** Phật tử có lý do rõ ràng và cảm hứng đẹp đẽ để quay trở lại viếng chùa mỗi sáng (điểm danh, gõ mõ, ngắm cá Koi, tích công đức).
 2. **Không gian 3D rực rỡ và sống động hơn:** Buổi tối trong chùa, các phật tử đi lại với những vầng hào quang ấm áp, trang phục trang nghiêm lung linh dưới ánh trăng và đèn hoa đăng.
 3. **Cộng đồng tu tập hướng thiện gắn kết:** Mọi người nhìn thấy sự tinh tấn của nhau, cùng nhau trợ duyên và sách tấn trên con đường tu học an lạc.
+

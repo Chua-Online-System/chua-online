@@ -3,10 +3,12 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { DETAILED_SUTRAS, type DetailedSutra } from '~/data/sutras'
 import { useSound } from '~/composables/useSound'
 import { usePracticeJournal } from '~/composables/usePracticeJournal'
+import { useMeritSystem } from '~/composables/useMeritSystem'
 
 const emit = defineEmits<{ (e: 'close'): void }>()
 
 const { playWoodenFish } = useSound()
+const { earnMerit } = useMeritSystem()
 const journal = usePracticeJournal()
 
 const selectedSutraId = ref(DETAILED_SUTRAS[0].id)
@@ -69,6 +71,7 @@ function startAutoScroll() {
     if (el.scrollTop + el.clientHeight >= el.scrollHeight - 5) {
       stopAutoScroll()
       journal.addSutraRead()
+      earnMerit('sutra_read', 5, 'Tụng đọc Kinh Phật viên mãn')
     }
   }, Math.max(15, 80 - scrollSpeed.value * 6))
 

@@ -2,9 +2,11 @@
 import { ref, computed, watch, onBeforeUnmount } from 'vue'
 import { useSound } from '~/composables/useSound'
 import { usePracticeJournal } from '~/composables/usePracticeJournal'
+import { useMeritSystem } from '~/composables/useMeritSystem'
 
 const { playChime } = useSound()
 const { addIncense } = usePracticeJournal()
+const { earnMerit } = useMeritSystem()
 
 const options = [1, 3, 5]
 const count = ref(3)
@@ -73,6 +75,7 @@ function light() {
   burning.value = true
   playChime()
   addIncense(count.value)
+  earnMerit('incense', 5, 'Dâng nén tâm hương cúng dường Tam Bảo')
   // Nhang cháy tàn dần trong ~26s rồi tắt, có thể thắp lại
   window.setTimeout(() => {
     burning.value = false

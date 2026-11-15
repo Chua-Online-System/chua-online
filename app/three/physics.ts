@@ -135,8 +135,11 @@ export function createWorldColliders(): Collider[] {
 
   // 10. BẾN THẢ HOA ĐĂNG SÔNG TRĂNG
   // Lan can đá hoa cương 2 bên mạn bến (X: ±15.2, Z: -84)
-  list.push({ type: 'box', minX: -15.6, maxX: -14.8, minZ: -89.0, maxZ: -79.0, name: 'Lan can Bến Sông Tây' })
-  list.push({ type: 'box', minX: 14.8, maxX: 15.6, minZ: -89.0, maxZ: -79.0, name: 'Lan can Bến Sông Đông' })
+  list.push({ type: 'box', minX: -15.8, maxX: -14.6, minZ: -89.0, maxZ: -78.5, name: 'Lan can Bến Sông Tây' })
+  list.push({ type: 'box', minX: 14.6, maxX: 15.8, minZ: -89.0, maxZ: -78.5, name: 'Lan can Bến Sông Đông' })
+  // Lan can đá mép bờ sông (ngăn trượt xuống vực nước, chừa lối cầu tàu gỗ |X| <= 2.8)
+  list.push({ type: 'box', minX: -15.6, maxX: -2.8, minZ: -85.2, maxZ: -83.6, name: 'Lan can Mép Bờ Tây' })
+  list.push({ type: 'box', minX: 2.8, maxX: 15.6, minZ: -85.2, maxZ: -83.6, name: 'Lan can Mép Bờ Đông' })
 
   // 11. CỔNG TAM QUAN (Z: 46)
   list.push({ type: 'box', minX: -18.0, maxX: -7.0, minZ: 45.4, maxZ: 46.6, name: 'Tường cổng Tây' })
@@ -158,6 +161,30 @@ export function createWorldColliders(): Collider[] {
     }
     const rSize = 3.0 + (i % 3) * 0.8
     list.push({ type: 'circle', x: rx, z: rz, radius: rSize * 0.9, name: `Vách đá biên ${i + 1}` })
+  }
+
+  // 14. KHỐI ĐÁ TẢNG BỜ HỒ SEN CÁ KOI (Ngăn đi xuyên vào lòng đá bị kẹt)
+  const POND_X = -65.0
+  const POND_Z = -4.0
+  const POND_RADIUS_X = 14.5
+  const POND_RADIUS_Z = 12.0
+  const rockCount = 28
+  for (let i = 0; i < rockCount; i++) {
+    const a = (i / rockCount) * Math.PI * 2
+    const rx = POND_X + Math.cos(a) * (POND_RADIUS_X + 0.4)
+    const rz = POND_Z + Math.sin(a) * (POND_RADIUS_Z + 0.4)
+    const nearBridgeEnds = Math.abs(rz - POND_Z) < 3.2 && (rx > POND_X + 10 || rx < POND_X - 10)
+    if (nearBridgeEnds) continue
+    const rockScale = 0.8 + (i % 3) * 0.35
+    list.push({ type: 'circle', x: rx, z: rz, radius: rockScale * 0.9, name: `Đá bờ hồ cá ${i + 1}` })
+  }
+
+  // 15. VIỀN ĐÁ TẢNG GÒ BỒ ĐỀ
+  for (let i = 0; i < 20; i++) {
+    const a = (i / 20) * Math.PI * 2
+    const bx = 64 + Math.cos(a) * 11.2
+    const bz = -12 + Math.sin(a) * 11.2
+    list.push({ type: 'circle', x: bx, z: bz, radius: 0.8, name: `Đá viền Bồ Đề ${i + 1}` })
   }
 
   return list
@@ -353,6 +380,12 @@ export function getGroundHeight(x: number, z: number, floorY: number): number {
   }
   if (z < -84.2 && Math.abs(x) <= 2.6) {
     return floorY - 0.75 // Cầu tàu gỗ vươn ra sông
+  }
+
+  // 7. Cầu thang đá bám sườn trước núi (Z: 62 đến 96, X: ±6.5)
+  if (Math.abs(x) <= 6.5 && z > 62 && z <= 96) {
+    const t = (z - 62) / 34
+    return floorY + t * (-10 - floorY) // dốc đều từ floorY (18) xuống chân núi (-10)
   }
 
   // Mặt sân chùa mặc định

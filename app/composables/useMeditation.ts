@@ -1,5 +1,6 @@
 import { ref, computed, onBeforeUnmount } from 'vue'
 import { usePracticeJournal } from './usePracticeJournal'
+import { useMeritSystem } from './useMeritSystem'
 
 let audioCtx: AudioContext | null = null
 
@@ -20,6 +21,7 @@ export type AmbientSoundType = 'silence' | 'rain' | 'stream' | 'temple_bell'
 
 export function useMeditation() {
   const journal = usePracticeJournal()
+  const { earnMerit } = useMeritSystem()
 
   const status = ref<'idle' | 'running' | 'paused' | 'completed'>('idle')
   const selectedDuration = ref(5) // phút (3, 5, 10, 15, 20, 30)
@@ -233,6 +235,8 @@ export function useMeditation() {
     // Ghi nhận vào nhật ký
     const minutesDone = Math.max(1, Math.round(elapsedSeconds.value / 60))
     journal.addMeditation(minutesDone)
+    const meritPoints = Math.min(30, Math.max(10, Math.floor(minutesDone / 3) * 10 || 10))
+    earnMerit('meditation', meritPoints, `Tọa thiền tĩnh tâm ${minutesDone} phút`)
   }
 
   function stopMeditation() {

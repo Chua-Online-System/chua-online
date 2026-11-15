@@ -12,13 +12,19 @@ import LanternRiver from '~/components/ecosystem/LanternRiver.vue'
 import LotusBlessingModal from '~/components/ecosystem/LotusBlessingModal.vue'
 import PracticeJournalModal from '~/components/profile/PracticeJournalModal.vue'
 import PracticeHallModal from '~/components/practice/PracticeHallModal.vue'
+import MeritToast from '~/components/merit/MeritToast.vue'
+import MeritLevelUpModal from '~/components/merit/MeritLevelUpModal.vue'
+import MeritProfileModal from '~/components/merit/MeritProfileModal.vue'
+import { useMeritSystem } from '~/composables/useMeritSystem'
 
 const { current, cloudEnabled, init, enterAsGuest, signUp, signIn, signOut } = useAuth()
+const { profile, currentTierInfo, earnMerit, init: initMerit } = useMeritSystem()
 
 const activePanel = ref<string>('')
 const templeSceneRef = ref<any>(null)
 const practiceTab = ref<'beads' | 'meditation' | 'sutras' | 'dharma'>('beads')
 const showGate = ref(true) // cửa "tự cấp tài khoản" trước khi vào
+const showMeritModal = ref(false)
 
 // khách đã lưu -> vào thẳng, không nháy cửa tài khoản
 if (import.meta.client) { try { if (localStorage.getItem('dco.pilgrim')) showGate.value = false } catch {} }
@@ -31,6 +37,7 @@ const busy = ref(false)
 
 onMounted(async () => {
   await init()
+  initMerit()
   if (current.value) showGate.value = false
 })
 
@@ -142,6 +149,7 @@ function onFishReleased(data: { speciesId: string; name: string; releaser: strin
   if (templeSceneRef.value?.spawnFish) {
     templeSceneRef.value.spawnFish(data.speciesId, data.name)
   }
+  earnMerit('fish_release', 15, `Phóng sinh cá Koi: ${data.name || 'Cá Cát Tường'}`)
   closePanel()
 }
 
@@ -149,6 +157,7 @@ function onRibbonAttached(data: { wish: string; author: string; color: 'red' | '
   if (templeSceneRef.value?.addBodhiRibbon) {
     templeSceneRef.value.addBodhiRibbon(data.wish, data.author, data.color)
   }
+  earnMerit('bodhi_ribbon', 10, 'Treo dải lụa nguyện ước Cội Bồ Đề')
   closePanel()
 }
 
@@ -156,6 +165,7 @@ function onLanternReleased(data: { sender: string; text: string; type: 'lotus_pi
   if (templeSceneRef.value?.releaseRiverLantern) {
     templeSceneRef.value.releaseRiverLantern(data.sender, data.text, data.type)
   }
+  earnMerit('lantern_release', 15, 'Thả hoa đăng cầu an Sông Trăng')
   closePanel()
 }
 
@@ -228,6 +238,11 @@ async function doSignOut() { await signOut(); showGate.value = true }
       <button @click="onInteract('journal')" class="btn-hud" title="Nhật ký tu tập">
         <span>🏮</span>
         <span class="hidden sm:inline">Nhật ký</span>
+      </button>
+      <button @click="showMeritModal = true" class="btn-hud btn-merit" title="Sổ Công Đức Tu Học">
+        <span>{{ currentTierInfo.badge }}</span>
+        <span class="font-serif font-bold text-amber-300">{{ profile.totalMerit }}</span>
+        <span class="hidden md:inline text-xs text-amber-200/90 font-sans">Công đức</span>
       </button>
       <span class="divider">|</span>
       <span class="name">🙏 {{ current.name }}</span>
@@ -306,6 +321,31 @@ async function doSignOut() { await signOut(); showGate.value = true }
         </div>
       </div>
     </transition>
+
+    <!-- Hệ Thống Thông Báo Công Đức & Thăng Cấp (Phase 1) -->
+    <ClientOnly>
+      <MeritToast />
+      <MeritLevelUpModal />
+
+      <transition
+        enter-active-class="transition duration-300 ease-out"
+        enter-from-class="opacity-0"
+        enter-to-class="opacity-100"
+        leave-active-class="transition duration-200 ease-in"
+        leave-from-class="opacity-100"
+        leave-to-class="opacity-0"
+      >
+        <div
+          v-if="showMeritModal"
+          class="fixed inset-0 z-50 flex items-center justify-center bg-black/65 p-4 backdrop-blur-sm overflow-y-auto"
+          @click.self="showMeritModal = false"
+        >
+          <div class="w-full max-w-2xl my-auto animate-fade-up">
+            <MeritProfileModal @close="showMeritModal = false" />
+          </div>
+        </div>
+      </transition>
+    </ClientOnly>
   </div>
 </template>
 
@@ -357,6 +397,15 @@ async function doSignOut() { await signOut(); showGate.value = true }
   font-size: .82rem; text-decoration: none; transition: all .2s;
 }
 .btn-hud:hover { background: rgba(201,163,86,.25); color: #fff; border-color: #c9a356; }
+.btn-merit {
+  background: linear-gradient(135deg, rgba(217, 185, 105, 0.22), rgba(180, 134, 63, 0.15));
+  border-color: rgba(230, 185, 92, 0.55);
+}
+.btn-merit:hover {
+  background: linear-gradient(135deg, rgba(217, 185, 105, 0.4), rgba(180, 134, 63, 0.25));
+  border-color: #ffd54f;
+  box-shadow: 0 0 12px rgba(255, 213, 79, 0.35);
+}
 .divider { opacity: .3; margin: 0 2px; }
 .name { font-weight: 500; color: #f3e6c4; }
 .btn-signout {

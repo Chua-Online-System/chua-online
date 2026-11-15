@@ -9,6 +9,7 @@ import { useSound } from '~/composables/useSound'
 import { useBodhiTree } from '~/composables/useBodhiTree'
 import { usePracticeJournal } from '~/composables/usePracticeJournal'
 import { useSpatialAudio } from '~/composables/useSpatialAudio'
+import { useMeritSystem } from '~/composables/useMeritSystem'
 import MiniMapRadar from '~/components/navigation/MiniMapRadar.vue'
 
 const emit = defineEmits<{ (e: 'interact', action: string): void }>()
@@ -17,6 +18,7 @@ const mp = useMultiplayer()
 const { feedFish: recordFeedFish } = useFishPond()
 const { playBell, playWoodenFish } = useSound()
 const { waterTree: recordWaterTree, canWaterToday } = useBodhiTree()
+const { earnMerit } = useMeritSystem()
 const journal = usePracticeJournal()
 const spatialAudio = useSpatialAudio()
 const playerCoords = reactive({ x: 0, z: 78, yaw: Math.PI })
@@ -276,7 +278,15 @@ function setKneel(on: boolean) {
   if (on) { legL.rotation.x = -1.5; legR.rotation.x = -1.5 }
   else { legL.rotation.x = 0; legR.rotation.x = 0 }
 }
+let sitTimer: any = null
 function sitDown() {
+  if (sitTimer) clearInterval(sitTimer)
+  sitTimer = setInterval(() => {
+    if (sitting.value) {
+      earnMerit('meditation', 10, 'Tọa thiền kiết già chánh niệm')
+    }
+  }, 60000)
+
   if (nearMedPad) {
     const targetY = getGroundHeight(nearMedPad.x, nearMedPad.z, world.floorY)
     avatarPos.set(nearMedPad.x, targetY, nearMedPad.z)
@@ -294,7 +304,15 @@ function sitDown() {
   placeAvatar(); avatar.position.y = avatarPos.y - 0.5; setKneel(true)
   cam.pitch = 0.1; cam.dist = 6.5
 }
-function standUp() { sitting.value = false; setKneel(false); cam.dist = 8 }
+function standUp() {
+  sitting.value = false
+  setKneel(false)
+  cam.dist = 8
+  if (sitTimer) {
+    clearInterval(sitTimer)
+    sitTimer = null
+  }
+}
 
 // --- interaction raycast (xét khoảng cách từ NHÂN VẬT tới vật) ---
 const raycaster = new THREE.Raycaster()
@@ -325,11 +343,14 @@ function doInteract() {
   if (hit) {
     if (hit.action.startsWith('signpost_')) {
       if (hit.label.includes('Hoa Đăng')) {
-        toast.value = '📜 Biển chỉ dẫn: Đi thẳng 25m ra phía trước để đến Bến Sông Trăng Thả Đèn 🌌'
+        toast.value = '📜 Bến Hoa Đăng Sông Trăng — Đang mở thả hoa đăng…'
+        emit('interact', 'lantern_release')
       } else if (hit.label.includes('Hồ Cá')) {
-        toast.value = '📜 Biển chỉ dẫn: Rẽ trái theo đại lộ để sang Hồ Sen Cá Koi Phóng Sinh 🐟'
+        toast.value = '📜 Hồ Sen Cá Koi — Đang mở hồ cá…'
+        emit('interact', 'modal_fish')
       } else if (hit.label.includes('Bồ Đề')) {
-        toast.value = '📜 Biển chỉ dẫn: Rẽ phải theo đại lộ để sang Vườn Bồ Đề Tâm & Lầu Chuông 🌳'
+        toast.value = '📜 Vườn Bồ Đề Tâm — Đang mở cội Bồ Đề…'
+        emit('interact', 'modal_bodhi')
       } else {
         toast.value = hit.label
       }
@@ -340,7 +361,8 @@ function doInteract() {
       if (world.fishPond) {
         world.fishPond.feedFish(avatarPos, avatarYaw)
         recordFeedFish()
-        toast.value = '🍞 Bạn vừa rắc mồi xuống hồ! Đàn cá Koi bơi lại ríu rít… (+1 Công đức)'
+        earnMerit('fish_feed', 3, 'Rắc mồi cho đàn cá Koi')
+        toast.value = '🍞 Bạn vừa rắc mồi xuống hồ! Đàn cá Koi bơi lại ríu rít… (+3 Công đức)'
         setTimeout(() => { if (toast.value.startsWith('🍞')) toast.value = '' }, 3500)
       }
       emit('interact', 'fish_feed')
@@ -357,7 +379,8 @@ function doInteract() {
       if (world.eastWing) {
         world.eastWing.ringBell()
         playBell()
-        toast.value = '🔔 Tiếng Đại Hồng Chung ngân vang trầm ấm… Tiêu tan phiền não, thanh tịnh thân tâm! (+1 Công đức)'
+        earnMerit('bell_ring', 5, 'Thỉnh Đại Hồng Chung')
+        toast.value = '🔔 Tiếng Đại Hồng Chung ngân vang trầm ấm… Tiêu tan phiền não, thanh tịnh thân tâm! (+5 Công đức)'
         setTimeout(() => { if (toast.value.startsWith('🔔')) toast.value = '' }, 4000)
       }
       emit('interact', 'bell_ring')
@@ -368,7 +391,8 @@ function doInteract() {
         recordWaterTree()
         world.eastWing?.waterTree()
         playBell()
-        toast.value = '💧 Bạn vừa tưới nước cam lộ cho Cội Bồ Đề! Rễ cây phát sáng nhiệm màu… (+1 Công đức)'
+        earnMerit('bodhi_water', 10, 'Tưới nước Cam Lộ Cội Bồ Đề')
+        toast.value = '💧 Bạn vừa tưới nước cam lộ cho Cội Bồ Đề! Rễ cây phát sáng nhiệm màu… (+10 Công đức)'
       } else {
         toast.value = '💧 Hôm nay bạn đã tưới nước cho cội Bồ Đề rồi. Hãy trở lại vào ngày mai nhé!'
       }
@@ -388,7 +412,8 @@ function doInteract() {
         world.northSanctuary.hitWoodenFish()
         playWoodenFish()
         journal.addChantingRound()
-        toast.value = '🐟 Cốc... Cốc... Tiếng mõ thanh tịnh, tâm ý an nhiên quy về chánh niệm. (+1 Niệm Phật)'
+        earnMerit('wooden_fish', 5, 'Gõ mõ chánh niệm')
+        toast.value = '🐟 Cốc... Cốc... Tiếng mõ thanh tịnh, tâm ý an nhiên quy về chánh niệm. (+5 Công đức)'
         setTimeout(() => { if (toast.value.startsWith('🐟')) toast.value = '' }, 3500)
       }
       emit('interact', 'wooden_fish')
@@ -416,7 +441,8 @@ function doInteract() {
     if (hit.action === 'meditation_sit') {
       sitDown()
       playBell()
-      toast.value = '🧘 Bạn đang tọa thiền kiết già tại Thiền Đường Tịnh Độ… Hít vào tâm tĩnh lặng, thở ra miệng mỉm cười.'
+      earnMerit('meditation', 10, 'Tọa thiền kiết già Thiền Đường')
+      toast.value = '🧘 Bạn đang tọa thiền kiết già tại Thiền Đường Tịnh Độ… Hít vào tâm tĩnh lặng, thở ra miệng mỉm cười. (+10 Công đức)'
       setTimeout(() => { if (toast.value.startsWith('🧘')) toast.value = '' }, 4500)
       emit('interact', 'meditation_sit')
       return
@@ -782,6 +808,7 @@ function startScene() {
 onMounted(startScene)
 
 onBeforeUnmount(() => {
+  if (sitTimer) clearInterval(sitTimer)
   cancelAnimationFrame(raf)
   window.removeEventListener('resize', onResize)
   mp.disconnect()
