@@ -303,7 +303,7 @@ export function buildSignpost(
     interactives.push({
       object: hitGeo,
       action: 'signpost_' + dir,
-      label: `📜 ${signText}`,
+      label: `📜 Biển chỉ dẫn: ${signText}`,
       focus: new THREE.Vector3(x, y + 1.8, z + 3.0)
     })
   }
@@ -559,14 +559,19 @@ export function buildExpandedLandscape(
   // =========================================================================
   for (let i = 0; i < 18; i++) {
     const angle = (i / 18) * Math.PI * 2
-    const dist = 88 + (i % 3) * 6
-    const rx = Math.cos(angle) * dist
-    const rz = Math.sin(angle) * dist - 16
+    let dist = 94 + (i % 3) * 4
+    let rx = Math.cos(angle) * dist
+    let rz = Math.sin(angle) * dist - 16
+    // Đảm bảo không xâm lấn vào khuôn viên Hồ Sen bờ Tây
+    if (rx < -60 && rz > -22 && rz < 14) {
+      rx = -96
+    }
+    const rSize = 3.0 + (i % 3) * 0.8
     const rockMesh = new THREE.Mesh(
-      new THREE.DodecahedronGeometry(4 + (i % 4) * 2, 0),
+      new THREE.DodecahedronGeometry(rSize, 0),
       M.rockCliff()
     )
-    rockMesh.position.set(rx, floorY - 1.5, rz)
+    rockMesh.position.set(rx, floorY - 0.5, rz)
     rockMesh.rotation.set(i * 0.4, i * 0.7, 0)
     rockMesh.castShadow = true
     rockMesh.receiveShadow = true

@@ -200,6 +200,9 @@ function buildStairs(from: THREE.Vector3, to: THREE.Vector3, steps: number, widt
     const rail = box(0.4, 0.4, railLen, M.stoneLight())
     rail.position.set(side * (width / 2 + 0.4), (from.y + to.y) / 2 + 1.5, (from.z + to.z) / 2)
     rail.rotation.x = Math.atan2(to.y - from.y, from.z - to.z); g.add(rail)
+    // Trụ đá kết thúc 2 đầu lan can cầu thang (tránh lộ chóp nhọn)
+    g.add(box(0.7, 1.6, 0.7, M.stone(), side * (width / 2 + 0.4), to.y + 0.8, to.z))
+    g.add(box(0.7, 1.6, 0.7, M.stone(), side * (width / 2 + 0.4), from.y + 0.8, from.z))
   }
   return { group: g, path }
 }
@@ -409,7 +412,7 @@ export function buildWorld(scene: THREE.Scene): World {
   // --- NÚI: đỉnh thật đỡ khu chùa ---
   const MCZ = -20
   const peakTop = new THREE.Mesh(new THREE.CylinderGeometry(82, 136, 44, 56), M.grass())
-  peakTop.position.set(0, floorY - 22.4, MCZ); peakTop.receiveShadow = true; root.add(peakTop)
+  peakTop.position.set(0, floorY - 22.8, MCZ); peakTop.receiveShadow = true; root.add(peakTop)
   const peakBody = new THREE.Mesh(new THREE.CylinderGeometry(136, 224, 150, 48), M.rock())
   peakBody.position.set(0, floorY - 119.4, MCZ); peakBody.receiveShadow = true; root.add(peakBody)
   for (let i = 0; i < 7; i++) {
@@ -438,6 +441,9 @@ export function buildWorld(scene: THREE.Scene): World {
   root.add(box(74, 1.2, 112, M.stone(), 0, floorY - 0.6, -8))
   root.add(box(76, 0.5, 114, M.stoneDark(), 0, floorY - 1.3, -8))
   root.add(box(10, 0.08, 110, M.stoneLight(), 0, floorY + 0.02, -8)) // thần đạo
+  // Thềm đá đón từ đỉnh cầu thang lên Cổng Tam Quan (Z: 46 đến 62)
+  root.add(box(16, 0.6, 18, M.stone(), 0, floorY - 0.3, 54))
+  root.add(box(10, 0.08, 18, M.stoneLight(), 0, floorY + 0.02, 54))
 
   // --- Cầu thang bám sườn trước núi (mép đỉnh z=62) ---
   const { group: stairs, path: climbPath } = buildStairs(new THREE.Vector3(0, -10, 96), new THREE.Vector3(0, floorY, 62), 48, 10)

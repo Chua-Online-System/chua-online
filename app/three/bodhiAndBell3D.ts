@@ -428,6 +428,9 @@ export function buildBodhiAndBell3D(
     const ang = (b / 28) * Math.PI * 2
     const bx = Math.cos(ang) * (MOUND_R - 0.2)
     const bz = Math.sin(ang) * (MOUND_R - 0.2)
+    // Chừa lối bước lên gò Bồ Đề từ đại lộ Tây (không bị đá cản đường đi)
+    if (bx < -MOUND_R + 2.5 && Math.abs(bz) < 3.2) continue
+
     const sz = 0.8 + Math.sin(b * 3) * 0.25
     const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(sz, 1), boulderMat)
     rock.position.set(bx, 0.4, bz)

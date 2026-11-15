@@ -128,15 +128,31 @@ export function buildNorthSanctuary3D(
   const wharfPlaza = makeBox(32, 0.5, 10, matGranite, 0, -0.25, 0)
   wharfGroup.add(wharfPlaza)
 
-  // Bậc thang đá thoai thoải dẫn xuống mép sông
+  // Bậc thang đá thoai thoải dẫn xuống mép sông (hướng Bắc ra sông)
   for (let s = 0; s < 4; s++) {
-    const step = makeBox(18 - s * 0.8, 0.22, 0.6, matStep, 0, -0.25 - (s + 1) * 0.18, 5.0 + s * 0.55)
+    const step = makeBox(18 - s * 0.8, 0.22, 0.6, matStep, 0, -0.25 - (s + 1) * 0.18, -4.8 - s * 0.55)
     wharfGroup.add(step)
   }
 
-  // Cầu tàu gỗ vươn dài ra mặt sông để phật tử thả đăng
-  const pier = makeBox(5.2, 0.25, 5.5, matLim, 0, -0.75, 7.2)
+  // Cầu tàu gỗ vươn dài ra mặt sông để phật tử thả đăng (vươn về hướng Bắc ra sông)
+  const pier = makeBox(5.2, 0.25, 7.0, matLim, 0, -0.75, -7.5)
   wharfGroup.add(pier)
+
+  // Bàn đá hoa đăng linh thiêng trên đầu cầu tàu gỗ
+  const lotusTable = makeBox(1.6, 0.4, 1.6, matGranite, 0, -0.45, -9.0)
+  const goldenLotus = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.5, 0.3, 0.35, 12),
+    new THREE.MeshStandardMaterial({ color: 0xffd54f, roughness: 0.3, metalness: 0.8 })
+  )
+  goldenLotus.position.set(0, -0.15, -9.0)
+  const altarFlame = new THREE.Mesh(
+    new THREE.SphereGeometry(0.14, 8, 8),
+    new THREE.MeshBasicMaterial({ color: 0xffeb3b })
+  )
+  altarFlame.position.set(0, 0.12, -9.0)
+  const altarLight = new THREE.PointLight(0xffb74d, 2.0, 12)
+  altarLight.position.set(0, 0.3, -9.0)
+  wharfGroup.add(lotusTable, goldenLotus, altarFlame, altarLight)
 
   // Lan can đá hoa cương 2 bên mạn bến
   for (const side of [-1, 1]) {
@@ -145,10 +161,10 @@ export function buildNorthSanctuary3D(
     wharfGroup.add(rail)
 
     // Trụ đá đầu bến có thạch đăng soi sáng dòng sông
-    const lanternPost = makeBox(0.7, 2.4, 0.7, matGranite, railX, 1.2, 4.6)
-    const lanternRoof = makeBox(1.2, 0.25, 1.2, matTile, railX, 2.5, 4.6)
+    const lanternPost = makeBox(0.7, 2.4, 0.7, matGranite, railX, 1.2, -4.6)
+    const lanternRoof = makeBox(1.2, 0.25, 1.2, matTile, railX, 2.5, -4.6)
     const lanternLight = new THREE.PointLight(0xffb74d, 1.8, 16)
-    lanternLight.position.set(railX, 2.2, 4.6)
+    lanternLight.position.set(railX, 2.2, -4.6)
     wharfGroup.add(lanternPost, lanternRoof, lanternLight)
   }
 
@@ -256,18 +272,18 @@ export function buildNorthSanctuary3D(
     }
   })
 
-  // Điểm tương tác: Thả hoa đăng tại cầu tàu
+  // Điểm tương tác: Thả hoa đăng tại đầu cầu tàu gỗ sát mép sông
   const lanternHit = new THREE.Mesh(
     new THREE.BoxGeometry(4.5, 3.2, 4.5),
     new THREE.MeshBasicMaterial({ visible: false })
   )
-  lanternHit.position.set(0, floorY - 0.2, WHARF_Z + 7.5)
+  lanternHit.position.set(0, floorY - 0.45, WHARF_Z - 8.5)
   northGroup.add(lanternHit)
   interactives.push({
     object: lanternHit,
     action: 'lantern_release',
     label: '🪷 Thả Hoa Đăng Sông Trăng',
-    focus: new THREE.Vector3(0, floorY - 0.2, WHARF_Z + 7.5)
+    focus: new THREE.Vector3(0, floorY - 0.75, WHARF_Z - 8.5)
   })
 
   // =========================================================================

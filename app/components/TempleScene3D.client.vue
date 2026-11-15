@@ -324,8 +324,16 @@ function doInteract() {
   const hit = pickCenter()
   if (hit) {
     if (hit.action.startsWith('signpost_')) {
-      toast.value = hit.label
-      setTimeout(() => { if (toast.value === hit.label) toast.value = '' }, 3500)
+      if (hit.label.includes('Hoa Đăng')) {
+        toast.value = '📜 Biển chỉ dẫn: Đi thẳng 25m ra phía trước để đến Bến Sông Trăng Thả Đèn 🌌'
+      } else if (hit.label.includes('Hồ Cá')) {
+        toast.value = '📜 Biển chỉ dẫn: Rẽ trái theo đại lộ để sang Hồ Sen Cá Koi Phóng Sinh 🐟'
+      } else if (hit.label.includes('Bồ Đề')) {
+        toast.value = '📜 Biển chỉ dẫn: Rẽ phải theo đại lộ để sang Vườn Bồ Đề Tâm & Lầu Chuông 🌳'
+      } else {
+        toast.value = hit.label
+      }
+      setTimeout(() => { if (toast.value.startsWith('📜')) toast.value = '' }, 4000)
       return
     }
     if (hit.action === 'fish_feed') {
@@ -386,6 +394,18 @@ function doInteract() {
       emit('interact', 'wooden_fish')
       return
     }
+    if (hit.action === 'lantern_release') {
+      toast.value = '🪷 Chuẩn bị đài sen hoa đăng thả xuôi dòng Sông Trăng cầu an…'
+      setTimeout(() => { if (toast.value.startsWith('🪷')) toast.value = '' }, 3000)
+      emit('interact', 'lantern_release')
+      return
+    }
+    if (hit.action === 'sutra_read') {
+      toast.value = '📖 Mở Kinh Phật tụng niệm cầu an…'
+      setTimeout(() => { if (toast.value.startsWith('📖')) toast.value = '' }, 3000)
+      emit('interact', 'sutra_read')
+      return
+    }
     if (hit.action === 'lantern_view') {
       const count = world.northSanctuary?.getLanternCount() || 32
       toast.value = `🌌 Bến Hoa Đăng Sông Trăng — Hàng ngàn ngọn hoa đăng lung linh (${count} đài sen) xuôi dòng an lạc.`
@@ -444,14 +464,14 @@ const currentZoneName = computed(() => {
   if (z > 44) return '⛩️ Cổng Tam Quan & Lối Lên Núi'
   if (z > 4 && Math.abs(x) <= 24) return '🏮 Sân Chùa Đại Lễ'
   if (z <= 4 && z >= -34 && Math.abs(x) <= 22) return '🏯 Đại Điện Tam Bảo (Chánh Điện)'
+  if (x <= -34 && z <= -34) return '🧘 Nhà Tụng Kinh & Thiền Đường 3D'
+  if (x <= -36 && z > -24 && z <= 16) return '🐟 Khu Hồ Cá Phóng Sinh & Đài Sen'
   if (x < -24 && z > 10) return '🌸 Đại Lộ Tây · Lối Sang Hồ Cá'
-  if (x <= -40 && z <= 12) return '🐟 Khu Hồ Cá Phóng Sinh & Đài Sen'
   if (x >= 40 && z >= 22) return '🔔 Lầu Chuông Đại Hồng Chung 3D'
   if (x > 24 && z > 14) return '🏮 Đại Lộ Đông · Lối Sang Lầu Chuông'
-  if (x >= 45 && z <= 14) return '🌳 Vườn Bồ Đề Tâm & Cổ Thụ 3D'
-  if (x <= -35 && z <= -34) return '🧘 Nhà Tụng Kinh & Thiền Đường 3D'
-  if (z < -34 && Math.abs(x) <= 30 && z >= -65) return '🪷 Lối Ra Bến Thả Hoa Đăng'
-  if (z < -65) return '🌌 Bến Hoa Đăng Sông Trăng 3D'
+  if (x >= 38 && z < 22 && z > -24) return '🌳 Vườn Bồ Đề Tâm & Cổ Thụ 3D'
+  if (z < -34 && Math.abs(x) <= 30 && z >= -68) return '🪷 Lối Ra Bến Thả Hoa Đăng'
+  if (z < -68) return '🌌 Bến Hoa Đăng Sông Trăng 3D'
   return '🍃 Khuôn Viên Thiền Tịnh'
 })
 
@@ -482,14 +502,15 @@ function animate() {
     avatarPos.set(p.x, p.y - 1.65, p.z) // chân nhân vật
     const dir = b.clone().sub(a); if (dir.lengthSq() > 1e-4) avatarYaw = Math.atan2(dir.x, dir.z)
     walkAmt = 1; walkPhase += dt * 9
-    cam.yaw = avatarYaw + Math.PI; cam.pitch = 0.22
+    cam.yaw = avatarYaw + Math.PI; cam.pitch = 0.32; cam.dist = 5.6
     placeAvatar(); animateLegs(); updateCamera(0.12)
     if (climbT >= 1) {
       phase.value = 'inside'
       const targetY = getGroundHeight(fullPath[n].x, fullPath[n].z, world.floorY)
       avatarPos.set(fullPath[n].x, targetY, fullPath[n].z)
       cam.yaw = 0
-      cam.pitch = 0.25
+      cam.pitch = 0.28
+      cam.dist = 7.0
     } // tới cổng -> tự điều khiển
   } else if (phase.value === 'inside') {
     const joyLen = Math.hypot(joyVec.x, joyVec.y)
