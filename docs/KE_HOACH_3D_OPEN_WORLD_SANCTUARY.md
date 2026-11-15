@@ -204,10 +204,14 @@ gantt
 * [x] Cơ chế Rắc Mồi (`fish_feed`): Thả các viên thức ăn vàng óng rơi xuống nước tạo vòng sóng lan tỏa (Water Ripples), đàn cá ngửi thấy mùi lập tức bơi nhanh về phía thức ăn và nổi lên đớp mồi, tăng lượt cho ăn và cộng công đức tu tập.
 * [x] Cơ chế Phóng Sinh Cá Cát Tường (`fish_release`): Bến gỗ phóng sinh bên bờ hồ, modal chọn loài cá, đặt tên chú cá, gửi gắm lời chúc nguyện, sinh ngay chú cá 3D bơi lội trong hồ và lưu vĩnh viễn vào Supabase table `pond_fish` cùng bộ nhớ máy.
 
-#### 📌 Phase 3: Xây dựng Vườn Bồ Đề Tâm 3D & Lầu Chuông Đại Hồng Chung
-* [ ] Dựng cây Bồ Đề đại thụ tán xòe bóng mát, rễ nổi và hệ thống dải lụa đỏ lay động theo gió.
-* [ ] Dựng Lầu Chuông 2 tầng mái đao cổ kính bằng gỗ, chuông đồng lớn và dùi gỗ gõ chuông.
-* [ ] Tương tác: Treo dải lụa nguyện ước (lưu Supabase) & Kéo dùi gõ Đại Hồng Chung ngân vang.
+#### 📌 Phase 3: Xây dựng Vườn Bồ Đề Tâm 3D & Lầu Chuông Đại Hồng Chung (ĐÃ HOÀN THÀNH ✅)
+* [x] Dựng Lầu Chuông Đại Hồng Chung 2 tầng mái đao cong vút cổ kính bằng 4 đại trụ gỗ lim trên bệ đá bậc ngũ cấp tại tọa độ `(X: 48, Z: 28)`.
+* [x] Quả Đại Hồng Chung bằng đồng khổng lồ (cao 2.8m) chạm khắc hoa văn chữ Vạn, quai chuông rồng Bồ Lao, dùi gỗ lim treo ngang bằng 2 dây thừng đỏ với cơ chế va chạm vật lý chân thực.
+* [x] Hiệu ứng vòng sóng âm ánh sáng vàng kim (`Shockwave Rings`) lan tỏa 25m cùng âm thanh chuông đồng trầm ấm ngân vang mỗi khi thỉnh chuông (`bell_ring`).
+* [x] Dựng Vườn Bồ Đề Tâm tại gò đất tròn cỏ xanh `(X: 64, Z: -12)` với cây Bồ Đề cổ thụ thân to lớn xù xì, rễ nổi cuồn cuộn bò lan và 7 vòm tán lá Bồ Đề rợp bóng mát.
+* [x] Hệ thống dải lụa nguyện ước 3D (đỏ cát tường, vàng hoàng kim, trắng thanh tịnh) đung đưa mềm mại theo gió núi cùng hiệu ứng lá Bồ Đề vàng bay lượn trong không gian.
+* [x] Giếng ngọc đá múc nước tưới cây Bồ Đề (`bodhi_water`) với hiệu ứng hào quang ngọc bích bừng sáng từ cội rễ, tăng trưởng công đức và lưu trữ lịch sử tưới.
+* [x] Bàn đá nguyện ước kết nối giao diện `BodhiRibbonModal.vue` (`bodhi_ribbon`), cho phép viết lời nguyện, chọn màu lụa, sinh ngay dải lụa 3D trên cành cây và đồng bộ lên Supabase `bodhi_trees`.
 
 #### 📌 Phase 4: Xây dựng Bến Thả Hoa Đăng Sông Trăng & Thiền Đường 3D
 * [ ] Tạo dòng sông đêm phản chiếu ánh trăng, bờ đá hoa cương dẫn xuống mép nước.

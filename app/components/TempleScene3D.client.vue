@@ -4,11 +4,15 @@ import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment
 import { buildWorld, makeSandalPair, type World } from '~/three/world'
 import { useMultiplayer } from '~/composables/useMultiplayer'
 import { useFishPond } from '~/composables/useFishPond'
+import { useSound } from '~/composables/useSound'
+import { useBodhiTree } from '~/composables/useBodhiTree'
 
 const emit = defineEmits<{ (e: 'interact', action: string): void }>()
 
 const mp = useMultiplayer()
 const { feedFish: recordFeedFish } = useFishPond()
+const { playBell } = useSound()
+const { waterTree: recordWaterTree, canWaterToday } = useBodhiTree()
 const online = mp.online
 const messages = mp.messages
 const chatText = ref('')
@@ -298,6 +302,36 @@ function doInteract() {
       emit('interact', 'fish_view')
       return
     }
+    if (hit.action === 'bell_ring') {
+      if (world.eastWing) {
+        world.eastWing.ringBell()
+        playBell()
+        toast.value = '🔔 Tiếng Đại Hồng Chung ngân vang trầm ấm… Tiêu tan phiền não, thanh tịnh thân tâm! (+1 Công đức)'
+        setTimeout(() => { if (toast.value.startsWith('🔔')) toast.value = '' }, 4000)
+      }
+      emit('interact', 'bell_ring')
+      return
+    }
+    if (hit.action === 'bodhi_water') {
+      if (canWaterToday.value) {
+        recordWaterTree()
+        world.eastWing?.waterTree()
+        playBell()
+        toast.value = '💧 Bạn vừa tưới nước cam lộ cho Cội Bồ Đề! Rễ cây phát sáng nhiệm màu… (+1 Công đức)'
+      } else {
+        toast.value = '💧 Hôm nay bạn đã tưới nước cho cội Bồ Đề rồi. Hãy trở lại vào ngày mai nhé!'
+      }
+      setTimeout(() => { if (toast.value.startsWith('💧')) toast.value = '' }, 4000)
+      emit('interact', 'bodhi_water')
+      return
+    }
+    if (hit.action === 'bodhi_view') {
+      const count = world.eastWing?.getRibbonCount() || 24
+      toast.value = `🌳 Cội Bồ Đề đại thụ tỏa bóng mát an lành — hiện có ${count} dải lụa nguyện ước đung đưa trong gió.`
+      setTimeout(() => { if (toast.value.startsWith('🌳')) toast.value = '' }, 4000)
+      emit('interact', 'bodhi_view')
+      return
+    }
     emit('interact', hit.action)
   }
 }
@@ -342,8 +376,9 @@ const currentZoneName = computed(() => {
   if (z <= 4 && z >= -34 && Math.abs(x) <= 22) return '🏯 Đại Điện Tam Bảo (Chánh Điện)'
   if (x < -24 && z > 10) return '🌸 Đại Lộ Tây · Lối Sang Hồ Cá'
   if (x <= -40 && z <= 12) return '🐟 Khu Hồ Cá Phóng Sinh & Đài Sen'
-  if (x > 24 && z > 14) return '🔔 Lối Sang Lầu Đại Hồng Chung'
-  if (x >= 35 && z <= 14) return '🌳 Vườn Bồ Đề Tâm Nguyện Ước'
+  if (x >= 40 && z >= 22) return '🔔 Lầu Chuông Đại Hồng Chung 3D'
+  if (x > 24 && z > 14) return '🏮 Đại Lộ Đông · Lối Sang Lầu Chuông'
+  if (x >= 45 && z <= 14) return '🌳 Vườn Bồ Đề Tâm & Cổ Thụ 3D'
   if (z < -34 && Math.abs(x) <= 30 && z >= -65) return '🪷 Lối Ra Bến Thả Hoa Đăng'
   if (z < -65) return '🌌 Bến Hoa Đăng Sông Trăng'
   return '🍃 Khuôn Viên Thiền Tịnh'
@@ -648,6 +683,16 @@ defineExpose({
   phase,
   spawnFish: (speciesId: string, name?: string) => world?.fishPond?.spawnFish(speciesId, name),
   feedFish: (pos?: THREE.Vector3) => world?.fishPond?.feedFish(pos || avatarPos),
+  addBodhiRibbon: (wish: string, author: string, color: 'red' | 'yellow' | 'white') =>
+    world?.eastWing?.addRibbon(wish, author, color),
+  ringBell: () => {
+    world?.eastWing?.ringBell()
+    playBell()
+  },
+  waterBodhiTree: () => {
+    world?.eastWing?.waterTree()
+    recordWaterTree()
+  },
   teleportTo: (x: number, z: number) => {
     if (avatarPos && world) {
       avatarPos.set(x, world.floorY, z)

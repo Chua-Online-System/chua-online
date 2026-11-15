@@ -1,6 +1,7 @@
 import { ref, computed } from 'vue'
 import type { BodhiTreeState, BodhiRibbon } from '~/types/ecosystem'
 import { usePracticeJournal } from './usePracticeJournal'
+import { useSupabase } from './useSupabase'
 
 const LS_KEY = 'dco_bodhi_tree_v1'
 
@@ -44,9 +45,38 @@ const isInitialized = ref(false)
 
 export function useBodhiTree() {
   const journal = usePracticeJournal()
+  const { client } = useSupabase()
 
-  function init() {
+  async function init() {
     if (!import.meta.client || isInitialized.value) return
+
+    // Đồng bộ từ Supabase nếu có
+    if (client) {
+      try {
+        const { data, error } = await client
+          .from('bodhi_trees')
+          .select('*')
+          .order('planted_at', { ascending: false })
+          .limit(1)
+        if (!error && data && data.length > 0) {
+          const row = data[0]
+          tree.value = {
+            id: row.id,
+            treeName: row.tree_name || 'Cây Bồ Đề Tâm',
+            plantedAt: new Date(row.planted_at).getTime(),
+            waterCount: row.water_count || 1,
+            lastWateredDate: row.last_watered_date || '',
+            stage: (row.stage || 'ancient') as any,
+            ribbons: Array.isArray(row.ribbons) ? row.ribbons : []
+          }
+          isInitialized.value = true
+          return
+        }
+      } catch (err) {
+        console.warn('Lỗi kết nối Supabase cho cây Bồ Đề, dùng cache local:', err)
+      }
+    }
+
     try {
       const raw = localStorage.getItem(LS_KEY)
       if (raw) {
@@ -105,8 +135,8 @@ export function useBodhiTree() {
     return Math.max(1, Math.floor(diff / (1000 * 60 * 60 * 24)))
   })
 
-  function waterTree(): boolean {
-    init()
+  async function waterTree(): Promise<boolean> {
+    await init()
     if (!canWaterToday.value) return false
 
     tree.value.waterCount = (tree.value.waterCount || 0) + 1
@@ -115,11 +145,22 @@ export function useBodhiTree() {
     persist()
 
     journal.today.value.treeWatered = true
+
+    if (client && tree.value.id && !tree.value.id.startsWith('bodhi-')) {
+      try {
+        await client.from('bodhi_trees').update({
+          water_count: tree.value.waterCount,
+          last_watered_date: tree.value.lastWateredDate,
+          stage: tree.value.stage
+        }).eq('id', tree.value.id)
+      } catch {}
+    }
+
     return true
   }
 
-  function attachRibbon(wish: string, author: string, color: 'red' | 'yellow' | 'white'): BodhiRibbon {
-    init()
+  async function attachRibbon(wish: string, author: string, color: 'red' | 'yellow' | 'white'): Promise<BodhiRibbon> {
+    await init()
     const newRibbon: BodhiRibbon = {
       id: 'ribbon-' + Math.random().toString(36).slice(2, 9),
       wish: wish.trim(),
@@ -131,6 +172,15 @@ export function useBodhiTree() {
     persist()
 
     journal.addPrayer()
+
+    if (client && tree.value.id && !tree.value.id.startsWith('bodhi-')) {
+      try {
+        await client.from('bodhi_trees').update({
+          ribbons: tree.value.ribbons
+        }).eq('id', tree.value.id)
+      } catch {}
+    }
+
     return newRibbon
   }
 

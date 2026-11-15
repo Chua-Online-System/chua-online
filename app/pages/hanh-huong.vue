@@ -5,6 +5,7 @@ import { useAuth } from '~/composables/useAuth'
 import TempleMapModal from '~/components/navigation/TempleMapModal.vue'
 import FishReleaseModal from '~/components/ecosystem/FishReleaseModal.vue'
 import FishPondCanvas from '~/components/ecosystem/FishPondCanvas.vue'
+import BodhiRibbonModal from '~/components/ecosystem/BodhiRibbonModal.vue'
 import BodhiGarden from '~/components/ecosystem/BodhiGarden.vue'
 import LanternRiver from '~/components/ecosystem/LanternRiver.vue'
 import LotusBlessingModal from '~/components/ecosystem/LotusBlessingModal.vue'
@@ -71,7 +72,22 @@ function onInteract(action: string) {
     closePanel()
     return
   }
-  else if (action === 'modal_bodhi' || action === 'bodhi') activePanel.value = 'bodhi'
+  if (action === 'modal_bodhi_ribbon' || action === 'bodhi_ribbon') {
+    activePanel.value = 'bodhi_ribbon'
+    return
+  }
+  if (action === 'modal_bodhi' || action === 'bodhi') {
+    // Dịch chuyển đến Vườn Bồ Đề 3D
+    templeSceneRef.value?.teleportTo(61, -15)
+    closePanel()
+    return
+  }
+  if (action === 'modal_bell' || action === 'bell') {
+    // Dịch chuyển đến Lầu Đại Hồng Chung 3D
+    templeSceneRef.value?.teleportTo(44, 28)
+    closePanel()
+    return
+  }
   else if (action === 'modal_lanterns' || action === 'lanterns') activePanel.value = 'lanterns'
   else if (action === 'modal_lotus' || action === 'lotus') activePanel.value = 'lotus'
   else if (action === 'modal_map' || action === 'map') activePanel.value = 'map'
@@ -114,12 +130,19 @@ function onFishReleased(data: { speciesId: string; name: string; releaser: strin
   closePanel()
 }
 
+function onRibbonAttached(data: { wish: string; author: string; color: 'red' | 'yellow' | 'white' }) {
+  if (templeSceneRef.value?.addBodhiRibbon) {
+    templeSceneRef.value.addBodhiRibbon(data.wish, data.author, data.color)
+  }
+  closePanel()
+}
+
 const isAltarPanel = computed(() =>
   ['incense', 'bell', 'merit', 'prayer', 'fortune'].includes(activePanel.value)
 )
 
 const isFullModal = computed(() =>
-  ['practice', 'map', 'fish', 'fish_release', 'bodhi', 'lanterns', 'lotus', 'journal'].includes(activePanel.value)
+  ['practice', 'map', 'fish', 'fish_release', 'bodhi', 'bodhi_ribbon', 'lanterns', 'lotus', 'journal'].includes(activePanel.value)
 )
 
 const panelTitle = computed(() => ({
@@ -244,6 +267,11 @@ async function doSignOut() { await signOut(); showGate.value = true }
             @released="onFishReleased"
           />
           <FishPondCanvas v-else-if="activePanel === 'fish'" @close="closePanel" />
+          <BodhiRibbonModal
+            v-if="activePanel === 'bodhi_ribbon'"
+            @close="closePanel"
+            @ribbon-attached="onRibbonAttached"
+          />
           <BodhiGarden v-else-if="activePanel === 'bodhi'" @close="closePanel" />
           <LanternRiver v-else-if="activePanel === 'lanterns'" @close="closePanel" />
           <LotusBlessingModal v-else-if="activePanel === 'lotus'" @close="closePanel" />
