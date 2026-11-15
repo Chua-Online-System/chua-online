@@ -63,7 +63,7 @@ export function createWorldColliders(): Collider[] {
   const bambooRadius = 1.35
   const bambooGroves = [
     { x: -36, z: 26 }, { x: -48, z: 26 }, { x: -60, z: 26 },
-    { x: -72, z: 12 }, { x: -72, z: -6 }, { x: -52, z: -16 },
+    { x: -72, z: 12 }, { x: -74, z: -16 }, { x: -52, z: -16 },
     { x: 36, z: 26 }, { x: 48, z: 28 }, { x: 60, z: 26 },
     { x: 72, z: 12 }, { x: 72, z: -6 }, { x: 52, z: -16 },
     { x: -16, z: -68 }, { x: 16, z: -68 }, { x: -24, z: -80 }, { x: 24, z: -80 }
@@ -144,8 +144,8 @@ export function createWorldColliders(): Collider[] {
   list.push({ type: 'circle', x: -5.5, z: 46.0, radius: 0.6, name: 'Cột Cổng Tam Quan Tây' })
   list.push({ type: 'circle', x: 5.5, z: 46.0, radius: 0.6, name: 'Cột Cổng Tam Quan Đông' })
 
-  // 12. ĐÀI SEN ĐÁ PHUN NƯỚC GIỮA HỒ CÁ
-  list.push({ type: 'circle', x: -65.0, z: -4.0, radius: 1.5, name: 'Đài sen giữa hồ' })
+  // 12. ĐÀI SEN ĐÁ PHUN NƯỚC GIỮA HỒ CÁ (ở X: -66.5, Z: 0.8 trong hồ, không nằm trên cầu)
+  list.push({ type: 'circle', x: -66.5, z: 0.8, radius: 2.2, name: 'Đài sen giữa hồ' })
 
   // 13. VÁCH ĐÁ BIÊN BẢN ĐỒ (Phù hợp với vị trí thực tế trong landscape.ts)
   for (let i = 0; i < 18; i++) {

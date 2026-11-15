@@ -443,7 +443,7 @@ export function buildExpandedLandscape(
   landscapeGroup.add(buildBambooGrove(-48, floorY, 26, 9, 2.8, updaters))
   landscapeGroup.add(buildBambooGrove(-60, floorY, 26, 8, 2.5, updaters))
   landscapeGroup.add(buildBambooGrove(-72, floorY, 12, 9, 2.8, updaters))
-  landscapeGroup.add(buildBambooGrove(-72, floorY, -6, 9, 2.8, updaters))
+  landscapeGroup.add(buildBambooGrove(-74, floorY, -16, 9, 2.8, updaters))
   landscapeGroup.add(buildBambooGrove(-52, floorY, -16, 7, 2.2, updaters))
 
   // Hàng trúc xanh che bóng mát dọc lối đi Cánh Đông
