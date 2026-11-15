@@ -190,11 +190,11 @@ gantt
 
 ### Chi tiết các Phase công việc:
 
-#### 📌 Phase 1: Mở rộng địa hình & Hệ thống điều khiển tự do
-* [ ] Mở rộng không gian `app/three/world.ts` từ `bounds` hẹp thành khuôn viên rộng lớn `200m x 200m`.
-* [ ] Kiến tạo các lối đi lát đá kết nối từ Chánh Điện sang cánh Tây và cánh Đông.
-* [ ] Trồng các rặng trúc, thảm cỏ, đèn lồng đá dẫn lối dọc các con đường.
-* [ ] Nâng cấp Controller: Hỗ trợ chạy/đi bộ thanh tịnh, xoay camera 360 độ tự do, Joystick cảm ứng trên di động siêu mượt.
+#### 📌 Phase 1: Mở rộng địa hình & Hệ thống điều khiển tự do (ĐÃ HOÀN THÀNH ✅)
+* [x] Mở rộng không gian `app/three/world.ts` từ `bounds` hẹp thành khuôn viên rộng lớn `200m x 200m` (`bounds: X[-88, 88], Z[-94, 62]`).
+* [x] Kiến tạo các lối đi lát đá kết nối từ Chánh Điện sang cánh Tây (Lối sang Hồ Cá) và cánh Đông (Lối sang Vườn Bồ Đề & Lầu Chuông), lối ra Bến Hoa Đăng phía sau.
+* [x] Trồng các rặng trúc xanh đu đưa theo gió, thảm cao nguyên đồi cỏ, hệ thống Thạch Đăng cổ kính ban đêm phát quang vàng ấm, biển chỉ dẫn thư pháp và ghế đá thiền tịnh.
+* [x] Nâng cấp Controller: Hỗ trợ chạy nhanh Zen Sprint bằng phím `Shift` (PC) hoặc nút `🏃 Chạy / 🚶 Đi` (Mobile), cuộn chuột thu phóng 360° tự do, đa điểm Multi-touch cảm ứng trên di động siêu mượt, nhận diện phân khu (Zone Badge HUD).
 
 #### 📌 Phase 2: Xây dựng Hồ Cá Phóng Sinh 3D & Cầu Đá Đài Sen
 * [ ] Tạo mô hình hồ nước ngọc bích, bờ đá cuội và cầu đá cong vòm vượt hồ.

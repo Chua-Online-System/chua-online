@@ -200,6 +200,8 @@ function updateCamera(lerpK = 1) {
   const off = new THREE.Vector3(Math.sin(cam.yaw) * Math.cos(cam.pitch), Math.sin(cam.pitch), Math.cos(cam.yaw) * Math.cos(cam.pitch)).multiplyScalar(cam.dist)
   const target = avatarPos.clone().add(new THREE.Vector3(0, 1.7, 0))
   const desired = target.clone().add(off)
+  // Ngăn camera tụt xuống dưới mặt sàn (giữ camera luôn trên cao)
+  if (desired.y < world.floorY + 0.8) desired.y = world.floorY + 0.8
   if (lerpK >= 1) camera.position.copy(desired); else camera.position.lerp(desired, lerpK)
   camera.lookAt(target)
 }
@@ -271,7 +273,14 @@ function doInteract() {
   if (sitting.value) { standUp(); return } // đứng dậy
   if (nearMat) { sitDown(); return } // ngồi quỳ
   const hit = pickCenter()
-  if (hit) emit('interact', hit.action)
+  if (hit) {
+    if (hit.action.startsWith('signpost_')) {
+      toast.value = hit.label
+      setTimeout(() => { if (toast.value === hit.label) toast.value = '' }, 3500)
+      return
+    }
+    emit('interact', hit.action)
+  }
 }
 function onClick() {
   if (phase.value !== 'inside') return
@@ -279,8 +288,11 @@ function onClick() {
   doInteract()
 }
 
-// --- Điều khiển cảm ứng (mobile): joystick ảo ---
+// --- Điều khiển cảm ứng (mobile): joystick ảo & chạy nhanh ---
 const isTouch = ref(false)
+const mobileSprint = ref(false)
+function toggleMobileSprint() { mobileSprint.value = !mobileSprint.value }
+
 const joyVec = reactive({ x: 0, y: 0 }) // -1..1 ; y âm = tiến
 const joyBaseEl = ref<HTMLElement | null>(null)
 let joyActive = false
@@ -295,6 +307,37 @@ function joyMove(e: PointerEvent) {
 }
 function joyEnd() { joyActive = false; joyVec.x = 0; joyVec.y = 0 }
 const joyKnob = computed(() => ({ transform: `translate(${joyVec.x * 36}px, ${joyVec.y * 36}px)` }))
+
+// Thu phóng camera bằng con lăn chuột (Mouse Wheel Zoom)
+function onWheel(e: WheelEvent) {
+  if (phase.value !== 'inside') return
+  e.preventDefault()
+  cam.dist = THREE.MathUtils.clamp(cam.dist + e.deltaY * 0.007, 4.0, 16.0)
+}
+
+// Xác định phân khu đang đứng (Zone Detection)
+const currentZoneName = computed(() => {
+  const x = avatarPos.x, z = avatarPos.z
+  if (z > 44) return '⛩️ Cổng Tam Quan & Lối Lên Núi'
+  if (z > 4 && Math.abs(x) <= 24) return '🏮 Sân Chùa Đại Lễ'
+  if (z <= 4 && z >= -34 && Math.abs(x) <= 22) return '🏯 Đại Điện Tam Bảo (Chánh Điện)'
+  if (x < -24 && z > 10) return '🌸 Đại Lộ Tây · Lối Sang Hồ Cá'
+  if (x <= -40 && z <= 12) return '🐟 Khu Hồ Cá Phóng Sinh & Đài Sen'
+  if (x > 24 && z > 14) return '🔔 Lối Sang Lầu Đại Hồng Chung'
+  if (x >= 35 && z <= 14) return '🌳 Vườn Bồ Đề Tâm Nguyện Ước'
+  if (z < -34 && Math.abs(x) <= 30 && z >= -65) return '🪷 Lối Ra Bến Thả Hoa Đăng'
+  if (z < -65) return '🌌 Bến Hoa Đăng Sông Trăng'
+  return '🍃 Khuôn Viên Thiền Tịnh'
+})
+
+let lastZone = ''
+watch(currentZoneName, (newZ) => {
+  if (newZ && newZ !== lastZone && phase.value === 'inside') {
+    lastZone = newZ
+    toast.value = `📍 Đang đến: ${newZ}`
+    setTimeout(() => { if (toast.value.startsWith('📍')) toast.value = '' }, 2500)
+  }
+})
 
 // --- loop ---
 function animate() {
@@ -318,16 +361,19 @@ function animate() {
     placeAvatar(); animateLegs(); updateCamera(0.12)
     if (climbT >= 1) { phase.value = 'inside'; avatarPos.set(fullPath[n].x, world.floorY, fullPath[n].z); cam.yaw = 0; cam.pitch = 0.25 } // tới cổng -> tự điều khiển
   } else if (phase.value === 'inside') {
-    const joyOn = Math.abs(joyVec.x) + Math.abs(joyVec.y) > 0.08
+    const joyLen = Math.hypot(joyVec.x, joyVec.y)
+    const joyOn = joyLen > 0.08
+    const isShift = Boolean(keys['shift'])
+    const isSprinting = isShift || mobileSprint.value || joyLen > 0.92
     const moving = joyOn || keys['w'] || keys['s'] || keys['a'] || keys['d'] || keys['arrowup'] || keys['arrowdown'] || keys['arrowleft'] || keys['arrowright']
     if (sitting.value) {
       if (moving) standUp() // đi -> đứng dậy
     }
     if (!sitting.value) {
-      const speed = 6.5 * dt
+      const speed = (isSprinting ? 11.0 : 6.2) * dt
       const camF = new THREE.Vector3(Math.sin(cam.yaw), 0, Math.cos(cam.yaw))
       const fwd = camF.clone().negate()
-      const right = new THREE.Vector3(-fwd.z, 0, fwd.x) // bên phải thật (sửa lỗi ngược trái/phải)
+      const right = new THREE.Vector3(-fwd.z, 0, fwd.x) // bên phải thật
       const move = new THREE.Vector3()
       if (keys['w'] || keys['arrowup']) move.add(fwd)
       if (keys['s'] || keys['arrowdown']) move.sub(fwd)
@@ -338,19 +384,39 @@ function animate() {
         move.normalize()
         const newX = THREE.MathUtils.clamp(avatarPos.x + move.x * speed, world.bounds.minX, world.bounds.maxX)
         let newZ = THREE.MathUtils.clamp(avatarPos.z + move.z * speed, world.bounds.minZ, world.bounds.maxZ)
-        // VẠCH CAM: vào lễ phải cởi dép, ra về phải mang dép
+        
+        // VẠCH CAM: vào lễ Chánh Điện phải cởi dép, ra về phải mang dép
+        // Chỉ áp dụng khi đi qua cửa Đại Điện Tam Bảo (|X| <= 24)
         const LZ = world.coiDepZ
-        if (avatarPos.z > LZ && newZ <= LZ && !sandalsOff.value) { newZ = LZ + 0.4; barrier.value = 'coi' }
-        else if (avatarPos.z < LZ && newZ >= LZ && sandalsOff.value) { newZ = LZ - 0.4; barrier.value = 'mang' }
-        else if (barrier.value && Math.abs(newZ - LZ) > 1.6) barrier.value = ''
+        const atMainHallEntrance = Math.abs(avatarPos.x) <= 24 && Math.abs(newX) <= 24
+        if (atMainHallEntrance) {
+          if (avatarPos.z > LZ && newZ <= LZ && !sandalsOff.value) { newZ = LZ + 0.4; barrier.value = 'coi' }
+          else if (avatarPos.z < LZ && newZ >= LZ && sandalsOff.value) { newZ = LZ - 0.4; barrier.value = 'mang' }
+          else if (barrier.value && Math.abs(newZ - LZ) > 1.8) barrier.value = ''
+        } else {
+          barrier.value = ''
+        }
+
         avatarPos.x = newX; avatarPos.z = newZ
         avatarYaw = Math.atan2(move.x, move.z)
-        walkAmt = Math.min(1, walkAmt + dt * 6); walkPhase += dt * 10
+        const stepRate = isSprinting ? 15.5 : 10
+        walkAmt = Math.min(1, walkAmt + dt * (isSprinting ? 8 : 6))
+        walkPhase += dt * stepRate
       } else {
         walkAmt = Math.max(0, walkAmt - dt * 6)
       }
       avatarPos.y = world.floorY
       placeAvatar(); animateLegs()
+
+      // Dynamic FOV khi chạy nhanh (tạo cảm giác lướt gió thênh thang)
+      if (camera) {
+        const targetFov = isSprinting && move.lengthSq() > 0 ? 63 : 58
+        if (Math.abs(camera.fov - targetFov) > 0.1) {
+          camera.fov = THREE.MathUtils.lerp(camera.fov, targetFov, dt * 6)
+          camera.updateProjectionMatrix()
+        }
+      }
+
       // thảm quỳ gần nhất (ưu tiên hiện "Ngồi quỳ" khi đang đứng trên thảm)
       nearMat = null; let bd = 1.6
       for (const m of world.mats) { const d = avatarPos.distanceTo(m); if (d < bd) { bd = d; nearMat = m } }
@@ -393,25 +459,32 @@ function onKey(e: KeyboardEvent, down: boolean) {
   keys[e.key.toLowerCase()] = down
 }
 
+let lookPointerId: number | null = null
 function onPointerDown(e: PointerEvent) {
   if (phase.value !== 'inside') return
+  const target = e.target as HTMLElement | null
+  if (target && target.closest('.joystick, .touch-actions, .chat, button, input, textarea')) return
   dragging = true
   moved = false
   lastX = e.clientX
   lastY = e.clientY
+  lookPointerId = e.pointerId
 }
 function onPointerMove(e: PointerEvent) {
-  if (!dragging) return
+  if (!dragging || (lookPointerId !== null && e.pointerId !== lookPointerId)) return
   const dx = e.clientX - lastX
   const dy = e.clientY - lastY
   if (Math.abs(dx) + Math.abs(dy) > 4) moved = true
   cam.yaw -= dx * 0.005
-  cam.pitch = THREE.MathUtils.clamp(cam.pitch + dy * 0.004, -0.15, 1.1)
+  cam.pitch = THREE.MathUtils.clamp(cam.pitch + dy * 0.004, -0.15, 1.15)
   lastX = e.clientX
   lastY = e.clientY
 }
-function onPointerUp() {
-  dragging = false
+function onPointerUp(e: PointerEvent) {
+  if (lookPointerId === null || e.pointerId === lookPointerId) {
+    dragging = false
+    lookPointerId = null
+  }
 }
 
 function startScene() {
@@ -537,7 +610,7 @@ defineExpose({ phase })
 </script>
 
 <template>
-  <div class="scene-wrap" @pointerdown="onPointerDown" @pointermove="onPointerMove" @pointerup="onPointerUp" @pointerleave="onPointerUp">
+  <div class="scene-wrap" @pointerdown="onPointerDown" @pointermove="onPointerMove" @pointerup="onPointerUp" @pointerleave="onPointerUp" @wheel.passive="onWheel">
     <canvas ref="canvasEl" class="scene-canvas" @click="onClick" />
 
     <!-- số người online -->
@@ -559,13 +632,22 @@ defineExpose({ phase })
 
     <!-- HUD khi ở trong chùa -->
     <template v-if="phase === 'inside'">
+      <!-- Thanh hiển thị phân khu đang đứng (Zone Badge) -->
+      <transition name="fade">
+        <div class="zone-badge">
+          <span class="zone-icon">📍</span> {{ currentZoneName }}
+        </div>
+      </transition>
+
       <transition name="fade">
         <div v-if="hoverLabel" class="action-hint">{{ hoverLabel }} <span>— bấm để thực hiện</span></div>
       </transition>
       <div v-if="!isTouch" class="controls-hint">
         <span><b>W A S D</b> / phím mũi tên — đi lại</span>
-        <span>Giữ &amp; kéo chuột — xoay quanh</span>
-        <span>Lại gần vật &amp; bấm — tương tác</span>
+        <span><b>Shift</b> — chạy nhanh</span>
+        <span>Cuộn chuột — thu phóng</span>
+        <span>Giữ chuột — xoay 360°</span>
+        <span>Lại gần &amp; bấm — tương tác</span>
       </div>
 
       <!-- Điều khiển cảm ứng (mobile) -->
@@ -575,7 +657,12 @@ defineExpose({ phase })
              @pointerup.stop="joyEnd" @pointerleave.stop="joyEnd" @pointercancel.stop="joyEnd">
           <div class="joystick-knob" :style="joyKnob" />
         </div>
-        <button class="touch-act" @pointerdown.stop.prevent="doInteract">🙏</button>
+        <div class="touch-actions">
+          <button class="touch-btn touch-sprint" :class="{ active: mobileSprint }" @pointerdown.stop.prevent="toggleMobileSprint">
+            {{ mobileSprint ? '🏃 Chạy' : '🚶 Đi' }}
+          </button>
+          <button class="touch-btn touch-act" @pointerdown.stop.prevent="doInteract">🙏</button>
+        </div>
       </template>
     </template>
 
@@ -667,11 +754,34 @@ defineExpose({ phase })
   background: radial-gradient(circle at 35% 30%, #e8d08a, #b4863f);
   box-shadow: 0 3px 10px rgba(0,0,0,.4); pointer-events: none;
 }
+.zone-badge {
+  position: absolute; top: 18px; left: 50%; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(36,24,15,.78); color: #fce8b2; padding: 7px 20px; border-radius: 999px;
+  border: 1px solid rgba(201,163,86,.5); font-family: 'Noto Serif', serif; font-size: .88rem;
+  letter-spacing: .02em; z-index: 7; pointer-events: none; backdrop-filter: blur(8px);
+  box-shadow: 0 4px 18px rgba(0,0,0,.35);
+}
+.touch-actions {
+  position: absolute; right: 20px; bottom: 28px; z-index: 9;
+  display: flex; align-items: center; gap: 12px;
+}
+.touch-btn {
+  border-radius: 50%; border: 2px solid rgba(201,163,86,.6);
+  background: rgba(40,26,16,.65); backdrop-filter: blur(6px); cursor: pointer;
+  touch-action: none; display: grid; place-items: center;
+  -webkit-tap-highlight-color: transparent; color: #f5efe0; font-family: 'Be Vietnam Pro', sans-serif;
+  transition: transform .15s, background .15s, border-color .15s;
+}
+.touch-btn:active { transform: scale(0.92); }
+.touch-sprint {
+  width: 58px; height: 58px; font-size: .85rem; font-weight: 600;
+}
+.touch-sprint.active {
+  background: rgba(201,163,86,.55); border-color: #ffd700; color: #fff;
+}
 .touch-act {
-  position: absolute; right: 24px; bottom: 44px; width: 76px; height: 76px; z-index: 9;
-  border-radius: 50%; border: 2px solid rgba(201,163,86,.6); font-size: 2rem;
-  background: rgba(40,26,16,.55); backdrop-filter: blur(4px); cursor: pointer;
-  touch-action: none; display: grid; place-items: center; -webkit-tap-highlight-color: transparent;
+  width: 74px; height: 74px; font-size: 2rem;
 }
 .touch-act:active { background: rgba(201,163,86,.5); }
 

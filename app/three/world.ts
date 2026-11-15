@@ -4,6 +4,7 @@
  * ban Tam Thế 3 tượng lớn hào quang lá đề, sân trong rất rộng (100 chỗ quỳ).
  */
 import * as THREE from 'three'
+import { buildExpandedLandscape } from './landscape'
 
 export interface Interactive {
   object: THREE.Object3D
@@ -562,14 +563,21 @@ export function buildWorld(scene: THREE.Scene): World {
 
   const sandalSpot = new THREE.Vector3(16, floorY, hallZ + HD / 2 + 4)
 
-  // Nhãn + vòng sáng cho mọi điểm tương tác
-  for (const it of interactives) { const p = it.object.position; root.add(stationMarker(p.x, floorY, p.z, it.label, floorY + 4.6, updaters)) }
+  // --- CẢNH QUAN MỞ RỘNG 200M X 200M (PHASE 1: THẾ GIỚI MỞ LIỀN MẠCH) ---
+  buildExpandedLandscape(root, floorY, updaters, interactives)
+
+  // Nhãn + vòng sáng cho mọi điểm tương tác (bỏ qua biển chỉ dẫn vì đã có bảng gỗ 3D)
+  for (const it of interactives) {
+    if (it.action.startsWith('signpost_')) continue
+    const p = it.object.position
+    root.add(stationMarker(p.x, floorY, p.z, it.label, floorY + 4.6, updaters))
+  }
 
   return {
     root, updaters, interactives, climbPath,
     bell: { pivot: bell.pivot, swing: bell.swing },
     floorY,
-    bounds: { minX: -25, maxX: 25, minZ: -42, maxZ: 58 },
+    bounds: { minX: -88, maxX: 88, minZ: -94, maxZ: 62 },
     sandalSpot, mats, coiDepZ
   }
 }
