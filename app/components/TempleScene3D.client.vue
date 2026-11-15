@@ -338,7 +338,7 @@ function doInteract() {
     }
     if (hit.action === 'fish_feed') {
       if (world.fishPond) {
-        world.fishPond.feedFish(avatarPos)
+        world.fishPond.feedFish(avatarPos, avatarYaw)
         recordFeedFish()
         toast.value = '🍞 Bạn vừa rắc mồi xuống hồ! Đàn cá Koi bơi lại ríu rít… (+1 Công đức)'
         setTimeout(() => { if (toast.value.startsWith('🍞')) toast.value = '' }, 3500)
@@ -791,7 +791,7 @@ onBeforeUnmount(() => {
 defineExpose({
   phase,
   spawnFish: (speciesId: string, name?: string) => world?.fishPond?.spawnFish(speciesId, name),
-  feedFish: (pos?: THREE.Vector3) => world?.fishPond?.feedFish(pos || avatarPos),
+  feedFish: (pos?: THREE.Vector3, yaw?: number) => world?.fishPond?.feedFish(pos || avatarPos, yaw ?? avatarYaw),
   addBodhiRibbon: (wish: string, author: string, color: 'red' | 'yellow' | 'white') =>
     world?.eastWing?.addRibbon(wish, author, color),
   ringBell: () => {

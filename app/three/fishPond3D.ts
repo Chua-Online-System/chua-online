@@ -13,7 +13,7 @@ import * as THREE from 'three'
 import type { Interactive, World } from './world'
 
 export interface FishPond3DController {
-  feedFish: (sourcePos?: THREE.Vector3) => { count: number; x: number; z: number }
+  feedFish: (sourcePos?: THREE.Vector3, sourceYaw?: number) => { count: number; x: number; z: number }
   spawnFish: (speciesId: string, name?: string) => void
   getFishCount: () => number
 }
@@ -68,10 +68,13 @@ interface KoiFish3D {
 
 interface FoodDrop {
   mesh: THREE.Mesh
-  velY: number
   x: number
   y: number
   z: number
+  velX: number
+  velY: number
+  velZ: number
+  inWater: boolean
   life: number
 }
 
@@ -600,56 +603,109 @@ export function buildFishPond3D(
     activeRipples.push({ mesh: ripMesh, scale: 0.3, maxScale, opacity: 0.8 })
   }
 
-  // Hàm rắc mồi xuống hồ
-  function feedFish(sourcePos?: THREE.Vector3) {
-    // Nếu truyền vị trí người chơi (đứng trên cầu), rắc mồi từ mép cầu
-    let fx = sourcePos ? sourcePos.x : POND_X
-    let fz = sourcePos ? sourcePos.z : POND_Z
+  // Hàm rắc mồi xuống hồ (Ném bổng parabol qua 2 bên lan can cầu xuống nước)
+  function feedFish(sourcePos?: THREE.Vector3, sourceYaw?: number) {
+    const origin = sourcePos ? sourcePos.clone() : new THREE.Vector3(POND_X, floorY + 1.2, POND_Z)
+    const handY = origin.y + 1.25
 
-    // Đảm bảo thức ăn rơi trong lòng hồ
-    const dx = fx - POND_X
-    const dz = fz - POND_Z
-    const distSq = (dx / POND_RADIUS_X) ** 2 + (dz / POND_RADIUS_Z) ** 2
-    if (distSq > 0.85) {
-      fx = POND_X + (dx / Math.sqrt(distSq)) * 0.6 * POND_RADIUS_X
-      fz = POND_Z + (dz / Math.sqrt(distSq)) * 0.6 * POND_RADIUS_Z
+    // Xác định xem người chơi có đang đứng trên cầu vòm không
+    // Cầu đá chạy từ X: -78 đến -52, tâm Z: -4, bề rộng 4.2m (lọt lòng |Z - (-4)| <= 2.2)
+    const isOnBridge = Math.abs(origin.z - POND_Z) <= 2.2 && origin.x >= -78 && origin.x <= -52
+
+    let lookDirX = 0
+    let lookDirZ = 1
+    if (sourceYaw !== undefined) {
+      lookDirX = Math.sin(sourceYaw)
+      lookDirZ = Math.cos(sourceYaw)
     }
 
-    const pelletCount = 10
-    for (let i = 0; i < pelletCount; i++) {
-      const px = fx + (Math.random() - 0.5) * 2.2
-      const pz = fz + (Math.random() - 0.5) * 2.2
-      const py = (sourcePos ? sourcePos.y + 1.2 : floorY + 1.2) + Math.random() * 0.4
+    const pelletCount = 14
+    let avgTargetX = POND_X
+    let avgTargetZ = POND_Z
 
+    for (let i = 0; i < pelletCount; i++) {
+      let velX = 0
+      let velZ = 0
+      // Lực ném bổng lên trên tạo hình vòng cung parabol bay qua lan can
+      const velY = 2.6 + Math.random() * 1.8
+
+      if (isOnBridge) {
+        // ĐỨNG TRÊN CẦU: Ném mồi bay bổng qua lan can 2 bên thành cầu xuống nước!
+        // Lan can Bắc ở Z = -2.15, Lan can Nam ở Z = -5.85 (cách tâm cầu 1.85m)
+        let side = 1
+        if (Math.abs(lookDirZ) >= 0.25) {
+          // Ném về phía thành cầu người chơi đang quay mặt nhìn ra
+          side = Math.sign(lookDirZ)
+        } else {
+          // Nếu đứng quay mặt dọc theo chiều cầu (Đông/Tây), rải đều mồi ra cả 2 bên mạn cầu
+          side = i % 2 === 0 ? 1 : -1
+        }
+
+        // Vận tốc ngang vuông góc với thành cầu để ném mồi bay xa ra ngoài lan can
+        // Lan can cách 1.85m -> ném với vận tốc đưa mồi bay xa 3.6m - 5.8m rơi tõm xuống lòng hồ
+        velZ = side * (3.6 + Math.random() * 2.2)
+        // Độ phân tán nhẹ dọc theo chiều dài cầu
+        velX = (Math.random() - 0.5) * 2.8 + (Math.abs(lookDirX) > 0.3 ? Math.sign(lookDirX) * 1.5 : 0)
+      } else {
+        // ĐỨNG TRÊN BỜ (Bến đá hoặc bờ hồ): Ném hướng về tâm hồ cá
+        const toCenterX = POND_X - origin.x
+        const toCenterZ = POND_Z - origin.z
+        const dist = Math.hypot(toCenterX, toCenterZ) || 1
+        const normX = toCenterX / dist
+        const normZ = toCenterZ / dist
+
+        // Ném mồi vươn xa ra mép bờ 4.5m - 7m vào giữa làn nước
+        const throwDist = 4.5 + Math.random() * 2.5
+        velX = normX * throwDist + (Math.random() - 0.5) * 2.0
+        velZ = normZ * throwDist + (Math.random() - 0.5) * 2.0
+      }
+
+      // Tạo mesh hạt thức ăn hình viên cá viên nhỏ màu vàng nâu
       const pMesh = new THREE.Mesh(
         new THREE.SphereGeometry(0.065, 6, 6),
-        new THREE.MeshStandardMaterial({ color: POND_COLORS.foodPellet, roughness: 0.7 })
+        new THREE.MeshStandardMaterial({
+          color: POND_COLORS.foodPellet,
+          roughness: 0.6,
+          metalness: 0.1
+        })
       )
-      pMesh.position.set(px, py, pz)
+      // Xuất phát từ bàn tay người chơi
+      pMesh.position.set(origin.x, handY, origin.z)
+      pMesh.castShadow = true
       pondGroup.add(pMesh)
 
       activeFoods.push({
         mesh: pMesh,
-        velY: -(1.8 + Math.random() * 1.5),
-        x: px,
-        y: py,
-        z: pz,
-        life: 14 // tồn tại trong 14 giây cho cá ăn
+        x: origin.x,
+        y: handY,
+        z: origin.z,
+        velX,
+        velY,
+        velZ,
+        inWater: false,
+        life: 14 // Tồn tại 14 giây cho cá ăn
       })
+
+      if (i === 0) {
+        avgTargetX = origin.x + velX * 0.85
+        avgTargetZ = origin.z + velZ * 0.85
+      }
     }
 
-    // Thu hút đàn cá ùa lại
+    // Thu hút đàn cá ùa lại vị trí mồi rơi xuống nước
     for (const fish of fishList3D) {
-      const dToFood = Math.hypot(fish.pos.x - fx, fish.pos.z - fz)
-      if (dToFood < 16) {
-        fish.targetAngle = Math.atan2(fz - fish.pos.z, fx - fish.pos.x) + (Math.random() - 0.5) * 0.4
-        fish.speed = fish.baseSpeed * 2.2
-        fish.targetDepth = WATER_Y - 0.12 // ngoi sát mặt nước đớp mồi
+      const dToFood = Math.hypot(fish.pos.x - avgTargetX, fish.pos.z - avgTargetZ)
+      if (dToFood < 18) {
+        fish.targetAngle =
+          Math.atan2(avgTargetZ - fish.pos.z, avgTargetX - fish.pos.x) +
+          (Math.random() - 0.5) * 0.4
+        fish.speed = fish.baseSpeed * 2.5
+        fish.targetDepth = WATER_Y - 0.08 // Ngoi sát mặt nước đớp mồi
         fish.isEating = true
       }
     }
 
-    return { count: pelletCount, x: fx, z: fz }
+    return { count: pelletCount, x: avgTargetX, z: avgTargetZ }
   }
 
   // Phóng sinh một chú cá mới vào hồ 3D
@@ -696,20 +752,48 @@ export function buildFishPond3D(
   // 8. VÒNG LẶP MÔ PHỎNG ĐÀN CÁ & SÓNG NƯỚC (Animation Loop)
   // =========================================================================
   updaters.push((t, dt) => {
-    // 1. Cập nhật các hạt thức ăn rơi xuống nước
+    // 1. Cập nhật các hạt thức ăn rơi xuống nước theo quỹ đạo parabol
     for (let i = activeFoods.length - 1; i >= 0; i--) {
       const f = activeFoods[i]
-      if (f.y > WATER_Y) {
+      if (!f.inWater) {
+        // Bay trong không trung theo quỹ đạo parabol hình cầu vồng
+        f.velY -= 9.8 * dt // Trọng lực kéo rơi xuống
+        f.x += f.velX * dt
+        f.z += f.velZ * dt
         f.y += f.velY * dt
-        f.mesh.position.y = f.y
+        f.mesh.position.set(f.x, f.y, f.z)
+
+        // Khi hạt mồi chạm mặt nước hồ
         if (f.y <= WATER_Y) {
+          f.inWater = true
           f.y = WATER_Y
-          spawnRipple(f.x, f.z, 1.2)
+          f.mesh.position.y = f.y
+          // Tạo vòng sóng nước lăn tăn ngay điểm tiếp nước
+          spawnRipple(f.x, f.z, 1.2 + Math.random() * 0.5)
+          // Lực cản nước dập tắt vận tốc ngang
+          f.velX *= 0.1
+          f.velZ *= 0.1
         }
       } else {
-        // Chìm từ từ xuống đáy hồ
-        f.y = Math.max(BED_Y + 0.1, f.y - dt * 0.12)
-        f.mesh.position.y = f.y
+        // Đã rơi xuống nước: chìm từ từ xuống đáy hồ
+        f.y = Math.max(BED_Y + 0.08, f.y - dt * 0.18)
+        f.x += f.velX * dt
+        f.z += f.velZ * dt
+        f.velX *= 0.88
+        f.velZ *= 0.88
+        f.mesh.position.set(f.x, f.y, f.z)
+
+        // Kiểm tra xem có chú cá Koi nào bơi đến đớp hạt mồi không
+        for (const fish of fishList3D) {
+          const distToMouth = Math.hypot(fish.pos.x - f.x, fish.pos.z - f.z)
+          if (distToMouth < 0.65 && Math.abs(fish.pos.y - f.y) < 0.35) {
+            // Cá đớp mồi ngon lành!
+            spawnRipple(f.x, f.z, 0.7)
+            f.life = 0
+            break
+          }
+        }
+
         f.life -= dt
         if (f.life <= 0) {
           pondGroup.remove(f.mesh)
