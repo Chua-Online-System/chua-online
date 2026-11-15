@@ -7,6 +7,8 @@ import { useFishPond } from '~/composables/useFishPond'
 import { useSound } from '~/composables/useSound'
 import { useBodhiTree } from '~/composables/useBodhiTree'
 import { usePracticeJournal } from '~/composables/usePracticeJournal'
+import { useSpatialAudio } from '~/composables/useSpatialAudio'
+import MiniMapRadar from '~/components/navigation/MiniMapRadar.vue'
 
 const emit = defineEmits<{ (e: 'interact', action: string): void }>()
 
@@ -15,6 +17,27 @@ const { feedFish: recordFeedFish } = useFishPond()
 const { playBell, playWoodenFish } = useSound()
 const { waterTree: recordWaterTree, canWaterToday } = useBodhiTree()
 const journal = usePracticeJournal()
+const spatialAudio = useSpatialAudio()
+const playerCoords = reactive({ x: 0, z: 78, yaw: Math.PI })
+
+function ensureAudioStarted() {
+  if (!spatialAudio.isStarted.value) {
+    spatialAudio.start()
+  }
+}
+
+function handleTeleport(target: { x: number; z: number; name: string }) {
+  if (phase.value !== 'inside') phase.value = 'inside'
+  avatarPos.set(target.x, world.floorY, target.z)
+  playerCoords.x = target.x
+  playerCoords.z = target.z
+  cam.yaw = 0
+  cam.pitch = 0.25
+  walkAmt = 0
+  if (sitting.value) standUp()
+  toast.value = `✨ Đã chuyển đến: ${target.name}`
+  setTimeout(() => { if (toast.value.startsWith('✨')) toast.value = '' }, 3000)
+}
 const online = mp.online
 const messages = mp.messages
 const chatText = ref('')
@@ -214,7 +237,11 @@ function updateCamera(lerpK = 1) {
   camera.lookAt(target)
 }
 
-function startClimb() { phase.value = 'climbing'; climbT = 0 }
+function startClimb() {
+  ensureAudioStarted()
+  phase.value = 'climbing'
+  climbT = 0
+}
 
 // --- Vạch cam: cởi dép để vào lễ / mang dép để ra về ---
 const barrier = ref<'' | 'coi' | 'mang'>('') // đang bị chặn ở vạch, cần hành động gì
@@ -373,6 +400,7 @@ function doInteract() {
   }
 }
 function onClick() {
+  ensureAudioStarted()
   if (phase.value !== 'inside') return
   if (moved) { moved = false; return }
   doInteract()
@@ -407,7 +435,7 @@ function onWheel(e: WheelEvent) {
 
 // Xác định phân khu đang đứng (Zone Detection)
 const currentZoneName = computed(() => {
-  const x = avatarPos.x, z = avatarPos.z
+  const x = playerCoords.x, z = playerCoords.z
   if (z > 44) return '⛩️ Cổng Tam Quan & Lối Lên Núi'
   if (z > 4 && Math.abs(x) <= 24) return '🏮 Sân Chùa Đại Lễ'
   if (z <= 4 && z >= -34 && Math.abs(x) <= 22) return '🏯 Đại Điện Tam Bảo (Chánh Điện)'
@@ -549,6 +577,12 @@ function animate() {
       hoverLabel.value = '🧎 Đứng dậy'
       updateCamera(0.12)
     }
+
+    // Cập nhật tọa độ reactive & âm thanh không gian 3D
+    playerCoords.x = avatarPos.x
+    playerCoords.z = avatarPos.z
+    playerCoords.yaw = avatarYaw
+    spatialAudio.updatePosition(avatarPos.x, avatarPos.z, dt)
   } else if (phase.value === 'threshold') {
     placeAvatar(); animateLegs(); updateCamera(0.1)
   } else {
@@ -580,6 +614,7 @@ function onKey(e: KeyboardEvent, down: boolean) {
 
 let lookPointerId: number | null = null
 function onPointerDown(e: PointerEvent) {
+  ensureAudioStarted()
   if (phase.value !== 'inside') return
   const target = e.target as HTMLElement | null
   if (target && target.closest('.joystick, .touch-actions, .chat, button, input, textarea')) return
@@ -744,6 +779,8 @@ defineExpose({
   teleportTo: (x: number, z: number) => {
     if (avatarPos && world) {
       avatarPos.set(x, world.floorY, z)
+      playerCoords.x = x
+      playerCoords.z = z
       cam.yaw = 0
     }
   }
@@ -773,6 +810,17 @@ defineExpose({
 
     <!-- HUD khi ở trong chùa -->
     <template v-if="phase === 'inside'">
+      <!-- Bản đồ Radar HUD & Điều khiển âm thanh (Phase 5) -->
+      <MiniMapRadar
+        :player-x="playerCoords.x"
+        :player-z="playerCoords.z"
+        :player-yaw="playerCoords.yaw"
+        :remote-players="mp.players"
+        :is-audio-muted="!spatialAudio.isEnabled.value"
+        @teleport="handleTeleport"
+        @toggle-audio="spatialAudio.toggleMute"
+      />
+
       <!-- Thanh hiển thị phân khu đang đứng (Zone Badge) -->
       <transition name="fade">
         <div class="zone-badge">
@@ -951,7 +999,7 @@ defineExpose({
 }
 .chat-badge { position: absolute; top: -4px; right: -4px; background: #d23b2e; color: #fff; font-size: .7rem; min-width: 18px; height: 18px; border-radius: 9px; display: grid; place-items: center; padding: 0 4px; }
 .online-badge {
-  position: absolute; top: 16px; right: 16px; z-index: 8;
+  position: absolute; top: 16px; left: 16px; z-index: 8;
   display: flex; align-items: center; gap: 8px;
   background: rgba(40,26,16,.6); color: #f5efe0; padding: 7px 14px; border-radius: 999px;
   border: 1px solid rgba(201,163,86,.4); backdrop-filter: blur(6px); font-size: .85rem;

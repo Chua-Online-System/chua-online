@@ -24,7 +24,7 @@ export function useMultiplayer() {
   const { client, isConfigured } = useSupabase()
   const { current } = useAuth()
 
-  const players: Record<string, RemotePlayer> = {}
+  const players = reactive<Record<string, RemotePlayer>>({})
   const messages = reactive<ChatMsg[]>([])
   const myId = Math.random().toString(36).slice(2, 10)
   const online = ref(1)

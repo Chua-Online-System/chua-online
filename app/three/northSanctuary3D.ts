@@ -504,3 +504,4 @@ export function buildNorthSanctuary3D(
     getMeditationPads: () => meditationPads
   }
 }
+

@@ -221,10 +221,10 @@ gantt
 * [x] Bàn kinh với Mõ Gỗ hình cá (Mokugyo) có dùi gõ vật lý, Chuông Bát gia trì bằng đồng và sách kinh Bát Nhã. Tương tác gõ mõ `wooden_fish` phát âm thanh cốc cốc chân thực (+1 niệm Phật).
 * [x] Hệ thống 12 Bồ Đoàn tròn bọc vải saffron xếp hàng ngay ngắn. Tương tác tọa thiền `meditation_sit`: nhân vật tĩnh tọa kiết già trang nghiêm, tiếng chuông thanh thoát ngân vang, camera chuyển góc quay điện ảnh êm đềm và ghi nhận thời gian thiền định vào nhật ký tu tập.
 
-#### 📌 Phase 5: Tối ưu Multiplayer, Spatial Audio & Mini-Map HUD
-* [ ] Đồng bộ hóa vị trí của mọi người chơi trên toàn bộ bản đồ 200m qua Supabase Realtime Broadcast.
-* [ ] Thêm Mini-Map radar nhỏ ở góc màn hình hiển thị vị trí bản thân và các phật tử khác.
-* [ ] Hệ thống âm thanh 3D Spatial Audio: lại gần nơi nào thì âm thanh đặc trưng của nơi đó vang lên chân thực.
+#### 📌 Phase 5: Tối ưu Multiplayer, Spatial Audio & Mini-Map HUD (ĐÃ HOÀN THÀNH ✅)
+* [x] Đồng bộ hóa vị trí của mọi người chơi trên toàn bộ bản đồ 200m qua Supabase Realtime Broadcast và BroadcastChannel đa tab cục bộ, mượt mà với hiển thị nhân vật 3D, tư thế quỳ lạy/tọa thiền, thẻ tên, bong bóng chat và dép để ngoài bậc thềm.
+* [x] Thêm Mini-Map radar 3D HUD ở góc trên (`MiniMapRadar.vue`): hiển thị tọa độ thực tế của người chơi kèm kim chỉ hướng xoay (Yaw arrow), chấm radar các phật tử khác đang online, danh sách 7 đại danh thắng linh thiêng và tính năng Fast-Travel dịch chuyển tức thời 1-click, hỗ trợ phím tắt `M` bật/thu gọn.
+* [x] Hệ thống âm thanh không gian 3D Spatial Audio (`useSpatialAudio.ts`): Tổng hợp âm thanh hoàn toàn tự nhiên bằng Web Audio API không phụ thuộc file nhạc ngoài, tự động điều biến âm lượng theo khoảng cách nhân vật: tiếng sóng nước sông đêm tại Bến Sông Trăng, tiếng đài sen róc rách tại Hồ Sen, tiếng chuông gió xào xạc cội Bồ Đề, âm vang trầm mặc tại Đại Điện, kèm nút bật/tắt âm thanh nhanh.
 
 ---
 
