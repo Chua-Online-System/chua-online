@@ -213,11 +213,13 @@ gantt
 * [x] Giếng ngọc đá múc nước tưới cây Bồ Đề (`bodhi_water`) với hiệu ứng hào quang ngọc bích bừng sáng từ cội rễ, tăng trưởng công đức và lưu trữ lịch sử tưới.
 * [x] Bàn đá nguyện ước kết nối giao diện `BodhiRibbonModal.vue` (`bodhi_ribbon`), cho phép viết lời nguyện, chọn màu lụa, sinh ngay dải lụa 3D trên cành cây và đồng bộ lên Supabase `bodhi_trees`.
 
-#### 📌 Phase 4: Xây dựng Bến Thả Hoa Đăng Sông Trăng & Thiền Đường 3D
-* [ ] Tạo dòng sông đêm phản chiếu ánh trăng, bờ đá hoa cương dẫn xuống mép nước.
-* [ ] Hàng trăm hoa đăng hoa sen phát sáng dập dềnh trôi xuôi dòng nước.
-* [ ] Dựng gian Nhà Tụng Kinh & Thiền Đường với các hàng bồ đoàn, mõ gỗ, chuông bát.
-* [ ] Tương tác: Thả hoa đăng trôi theo dòng nước & Ngồi kiết già toạ thiền nhập định.
+#### 📌 Phase 4: Xây dựng Bến Thả Hoa Đăng Sông Trăng & Thiền Đường 3D (ĐÃ HOÀN THÀNH ✅)
+* [x] Tạo dòng Sông Trăng tĩnh mịch trải dài 180m ở cánh Bắc `(Z: -92)` với shader mặt nước sóng đêm phản chiếu ánh trăng huyền ảo, bến đá hoa cương ngũ cấp, cầu tàu gỗ vươn ra mép nước và thạch đăng soi sáng dòng sông.
+* [x] Đàn hoa đăng sen 3D (32+ chiếc) mang ngọn nến lung linh trôi dập dềnh xuôi dòng từ Đông sang Tây theo dòng chảy thực tế và tự động tuần hoàn trên mặt nước.
+* [x] Cơ chế Thả Hoa Đăng 3D (`lantern_release`): Giao diện `LanternReleaseModal.vue` cho phép chọn đài sen (Hồng, Vàng, Trắng), viết lời cầu an, thắp sáng và thả ngay hoa đăng 3D xuống mép nước trôi ra giữa dòng sông, đồng bộ Supabase `river_lanterns` và Realtime Broadcast.
+* [x] Dựng gian Nhà Tụng Kinh & Thiền Đường Tịnh Độ ba gian bằng gỗ lim cổ kính tại cánh Tây Bắc `(X: -48, Z: -48)` với mái ngói vảy cá đao cong, Tượng Phật Thích Ca tĩnh tọa, bàn thờ kinh Phật trang nghiêm.
+* [x] Bàn kinh với Mõ Gỗ hình cá (Mokugyo) có dùi gõ vật lý, Chuông Bát gia trì bằng đồng và sách kinh Bát Nhã. Tương tác gõ mõ `wooden_fish` phát âm thanh cốc cốc chân thực (+1 niệm Phật).
+* [x] Hệ thống 12 Bồ Đoàn tròn bọc vải saffron xếp hàng ngay ngắn. Tương tác tọa thiền `meditation_sit`: nhân vật tĩnh tọa kiết già trang nghiêm, tiếng chuông thanh thoát ngân vang, camera chuyển góc quay điện ảnh êm đềm và ghi nhận thời gian thiền định vào nhật ký tu tập.
 
 #### 📌 Phase 5: Tối ưu Multiplayer, Spatial Audio & Mini-Map HUD
 * [ ] Đồng bộ hóa vị trí của mọi người chơi trên toàn bộ bản đồ 200m qua Supabase Realtime Broadcast.

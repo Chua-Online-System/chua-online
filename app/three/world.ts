@@ -7,6 +7,7 @@ import * as THREE from 'three'
 import { buildExpandedLandscape } from './landscape'
 import { buildFishPond3D, type FishPond3DController } from './fishPond3D'
 import { buildBodhiAndBell3D, type BodhiAndBell3DController } from './bodhiAndBell3D'
+import { buildNorthSanctuary3D, type NorthSanctuary3DController } from './northSanctuary3D'
 
 export interface Interactive {
   object: THREE.Object3D
@@ -23,6 +24,8 @@ export interface World {
   bell?: { pivot: THREE.Object3D; swing: (strength: number) => void }
   fishPond?: FishPond3DController
   eastWing?: BodhiAndBell3DController
+  northSanctuary?: NorthSanctuary3DController
+  meditationPads?: THREE.Vector3[]
   floorY: number
   bounds: { minX: number; maxX: number; minZ: number; maxZ: number }
   sandalSpot: THREE.Vector3
@@ -576,13 +579,20 @@ export function buildWorld(scene: THREE.Scene): World {
   // --- VƯỜN BỒ ĐỀ TÂM & LẦU ĐẠI HỒNG CHUNG 3D (PHASE 3) ---
   const eastWing = buildBodhiAndBell3D(root, floorY, updaters, interactives)
 
-  // Nhãn + vòng sáng cho các điểm tâm linh (bỏ qua biển chỉ dẫn, hồ cá, vườn bồ đề và lầu chuông vì đã có kiến trúc 3D riêng)
+  // --- BẾN HOA ĐĂNG SÔNG TRĂNG & THIỀN ĐƯỜNG TỊNH ĐỘ 3D (PHASE 4) ---
+  const northSanctuary = buildNorthSanctuary3D(root, floorY, updaters, interactives)
+
+  // Nhãn + vòng sáng cho các điểm tâm linh (bỏ qua các điểm đã có kiến trúc 3D riêng)
   for (const it of interactives) {
     if (
       it.action.startsWith('signpost_') ||
       it.action.startsWith('fish_') ||
       it.action.startsWith('bodhi_') ||
-      it.action === 'bell_ring'
+      it.action.startsWith('lantern_') ||
+      it.action.startsWith('meditation_') ||
+      it.action === 'bell_ring' ||
+      it.action === 'wooden_fish' ||
+      it.action === 'sutra_read'
     ) continue
     const p = it.object.position
     root.add(stationMarker(p.x, floorY, p.z, it.label, floorY + 4.6, updaters))
@@ -593,6 +603,8 @@ export function buildWorld(scene: THREE.Scene): World {
     bell: { pivot: bell.pivot, swing: bell.swing },
     fishPond,
     eastWing,
+    northSanctuary,
+    meditationPads: northSanctuary.getMeditationPads(),
     floorY,
     bounds: { minX: -88, maxX: 88, minZ: -94, maxZ: 62 },
     sandalSpot, mats, coiDepZ

@@ -7,6 +7,7 @@ import FishReleaseModal from '~/components/ecosystem/FishReleaseModal.vue'
 import FishPondCanvas from '~/components/ecosystem/FishPondCanvas.vue'
 import BodhiRibbonModal from '~/components/ecosystem/BodhiRibbonModal.vue'
 import BodhiGarden from '~/components/ecosystem/BodhiGarden.vue'
+import LanternReleaseModal from '~/components/ecosystem/LanternReleaseModal.vue'
 import LanternRiver from '~/components/ecosystem/LanternRiver.vue'
 import LotusBlessingModal from '~/components/ecosystem/LotusBlessingModal.vue'
 import PracticeJournalModal from '~/components/profile/PracticeJournalModal.vue'
@@ -88,7 +89,21 @@ function onInteract(action: string) {
     closePanel()
     return
   }
-  else if (action === 'modal_lanterns' || action === 'lanterns') activePanel.value = 'lanterns'
+  if (action === 'modal_lantern_release' || action === 'lantern_release') {
+    activePanel.value = 'lantern_release'
+    return
+  }
+  if (action === 'modal_lanterns' || action === 'lanterns') {
+    // Dịch chuyển đến Bến Hoa Đăng Sông Trăng 3D
+    templeSceneRef.value?.teleportTo(0, -82)
+    closePanel()
+    return
+  }
+  if (action === 'sutra_read') {
+    practiceTab.value = 'sutras'
+    activePanel.value = 'practice'
+    return
+  }
   else if (action === 'modal_lotus' || action === 'lotus') activePanel.value = 'lotus'
   else if (action === 'modal_map' || action === 'map') activePanel.value = 'map'
   else if (action === 'modal_journal' || action === 'journal') activePanel.value = 'journal'
@@ -137,12 +152,19 @@ function onRibbonAttached(data: { wish: string; author: string; color: 'red' | '
   closePanel()
 }
 
+function onLanternReleased(data: { sender: string; text: string; type: 'lotus_pink' | 'lotus_gold' | 'lotus_white'; category: string }) {
+  if (templeSceneRef.value?.releaseRiverLantern) {
+    templeSceneRef.value.releaseRiverLantern(data.sender, data.text, data.type)
+  }
+  closePanel()
+}
+
 const isAltarPanel = computed(() =>
   ['incense', 'bell', 'merit', 'prayer', 'fortune'].includes(activePanel.value)
 )
 
 const isFullModal = computed(() =>
-  ['practice', 'map', 'fish', 'fish_release', 'bodhi', 'bodhi_ribbon', 'lanterns', 'lotus', 'journal'].includes(activePanel.value)
+  ['practice', 'map', 'fish', 'fish_release', 'bodhi', 'bodhi_ribbon', 'lanterns', 'lantern_release', 'lotus', 'journal'].includes(activePanel.value)
 )
 
 const panelTitle = computed(() => ({
@@ -273,6 +295,11 @@ async function doSignOut() { await signOut(); showGate.value = true }
             @ribbon-attached="onRibbonAttached"
           />
           <BodhiGarden v-else-if="activePanel === 'bodhi'" @close="closePanel" />
+          <LanternReleaseModal
+            v-else-if="activePanel === 'lantern_release'"
+            @close="closePanel"
+            @released="onLanternReleased"
+          />
           <LanternRiver v-else-if="activePanel === 'lanterns'" @close="closePanel" />
           <LotusBlessingModal v-else-if="activePanel === 'lotus'" @close="closePanel" />
           <PracticeJournalModal v-else-if="activePanel === 'journal'" @close="closePanel" />

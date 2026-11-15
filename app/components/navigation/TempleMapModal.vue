@@ -33,12 +33,12 @@ const TEMPLE_ZONES: TempleZone[] = [
   },
   {
     id: 'ben-hoa-dang',
-    name: 'Bến Thả Hoa Đăng',
-    eyebrow: 'Ánh sáng nguyện cầu',
-    description: 'Dòng sông đêm trăng tĩnh mịch với hàng ngàn hoa đăng sen hồng lung linh gửi lời chúc lành đến muôn loài.',
+    name: 'Bến Hoa Đăng Sông Trăng 3D',
+    eyebrow: 'Ánh sáng nguyện cầu · Thế giới 3D',
+    description: 'Dòng sông đêm trăng tĩnh mịch với hàng ngàn hoa đăng sen 3D lung linh trôi dập dềnh xuôi dòng. Thả hoa đăng cầu an và chiêm ngưỡng ánh nến ấm áp.',
     icon: '🪔',
     category: 'nature',
-    badge: 'Mới · Lung linh',
+    badge: '3D Lung Linh',
     posX: 66,
     posY: 78,
     targetAction: 'modal_lanterns'
@@ -80,15 +80,15 @@ const TEMPLE_ZONES: TempleZone[] = [
   },
   {
     id: 'nha-tung-kinh',
-    name: 'Nhà Tụng Kinh & Thiền',
-    eyebrow: 'Công phu tu tập',
-    description: 'Không gian lần chuỗi hạt 108 biến theo tiếng mõ, tọa thiền định Zen và đọc kinh Chú Đại Bi tự động cuộn chữ.',
-    icon: '📿',
+    name: 'Nhà Tụng Kinh & Thiền Đường 3D',
+    eyebrow: 'Công phu tu tập · Thế giới 3D',
+    description: 'Gian nhà gỗ lim ba gian tĩnh mịch. Tọa thiền kiết già trên 12 bồ đoàn đếm phút chánh niệm, gõ mõ niệm Phật và đọc kinh Bát Nhã.',
+    icon: '🧘',
     category: 'practice',
-    badge: 'Tu tập',
+    badge: '3D Tu Tập',
     posX: 26,
     posY: 20,
-    targetAction: 'modal_practice'
+    targetAction: 'modal_meditation'
   },
   {
     id: 'so-vang-cau-an',

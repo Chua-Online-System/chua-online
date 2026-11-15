@@ -6,13 +6,15 @@ import { useMultiplayer } from '~/composables/useMultiplayer'
 import { useFishPond } from '~/composables/useFishPond'
 import { useSound } from '~/composables/useSound'
 import { useBodhiTree } from '~/composables/useBodhiTree'
+import { usePracticeJournal } from '~/composables/usePracticeJournal'
 
 const emit = defineEmits<{ (e: 'interact', action: string): void }>()
 
 const mp = useMultiplayer()
 const { feedFish: recordFeedFish } = useFishPond()
-const { playBell } = useSound()
+const { playBell, playWoodenFish } = useSound()
 const { waterTree: recordWaterTree, canWaterToday } = useBodhiTree()
+const journal = usePracticeJournal()
 const online = mp.online
 const messages = mp.messages
 const chatText = ref('')
@@ -237,6 +239,7 @@ function doMangDep() {
 // --- Ngồi quỳ trên thảm ---
 const sitting = ref(false)
 let nearMat: THREE.Vector3 | null = null
+let nearMedPad: THREE.Vector3 | null = null
 
 function setKneel(on: boolean) {
   if (!legL) return
@@ -244,6 +247,14 @@ function setKneel(on: boolean) {
   else { legL.rotation.x = 0; legR.rotation.x = 0 }
 }
 function sitDown() {
+  if (nearMedPad) {
+    avatarPos.set(nearMedPad.x, world.floorY, nearMedPad.z)
+    avatarYaw = 0 // quay mặt về tượng Phật vách Bắc
+    walkAmt = 0; sitting.value = true
+    placeAvatar(); avatar.position.y = avatarPos.y - 0.35; setKneel(true)
+    cam.pitch = 0.15; cam.dist = 5.2
+    return
+  }
   if (!nearMat) return
   avatarPos.set(nearMat.x, world.floorY, nearMat.z)
   avatarYaw = Math.PI // quay mặt vào ban thờ
@@ -277,7 +288,7 @@ function doInteract() {
   if (barrier.value === 'coi') { doCoiDep(); return }  // vạch cam: cởi dép để vào
   if (barrier.value === 'mang') { doMangDep(); return } // vạch cam: mang dép để ra
   if (sitting.value) { standUp(); return } // đứng dậy
-  if (nearMat) { sitDown(); return } // ngồi quỳ
+  if (nearMedPad || nearMat) { sitDown(); return } // tọa thiền / ngồi quỳ
   const hit = pickCenter()
   if (hit) {
     if (hit.action.startsWith('signpost_')) {
@@ -332,6 +343,32 @@ function doInteract() {
       emit('interact', 'bodhi_view')
       return
     }
+    if (hit.action === 'wooden_fish') {
+      if (world.northSanctuary) {
+        world.northSanctuary.hitWoodenFish()
+        playWoodenFish()
+        journal.addChantingRound()
+        toast.value = '🐟 Cốc... Cốc... Tiếng mõ thanh tịnh, tâm ý an nhiên quy về chánh niệm. (+1 Niệm Phật)'
+        setTimeout(() => { if (toast.value.startsWith('🐟')) toast.value = '' }, 3500)
+      }
+      emit('interact', 'wooden_fish')
+      return
+    }
+    if (hit.action === 'lantern_view') {
+      const count = world.northSanctuary?.getLanternCount() || 32
+      toast.value = `🌌 Bến Hoa Đăng Sông Trăng — Hàng ngàn ngọn hoa đăng lung linh (${count} đài sen) xuôi dòng an lạc.`
+      setTimeout(() => { if (toast.value.startsWith('🌌')) toast.value = '' }, 4000)
+      emit('interact', 'lantern_view')
+      return
+    }
+    if (hit.action === 'meditation_sit') {
+      sitDown()
+      playBell()
+      toast.value = '🧘 Bạn đang tọa thiền kiết già tại Thiền Đường Tịnh Độ… Hít vào tâm tĩnh lặng, thở ra miệng mỉm cười.'
+      setTimeout(() => { if (toast.value.startsWith('🧘')) toast.value = '' }, 4500)
+      emit('interact', 'meditation_sit')
+      return
+    }
     emit('interact', hit.action)
   }
 }
@@ -379,8 +416,9 @@ const currentZoneName = computed(() => {
   if (x >= 40 && z >= 22) return '🔔 Lầu Chuông Đại Hồng Chung 3D'
   if (x > 24 && z > 14) return '🏮 Đại Lộ Đông · Lối Sang Lầu Chuông'
   if (x >= 45 && z <= 14) return '🌳 Vườn Bồ Đề Tâm & Cổ Thụ 3D'
+  if (x <= -35 && z <= -34) return '🧘 Nhà Tụng Kinh & Thiền Đường 3D'
   if (z < -34 && Math.abs(x) <= 30 && z >= -65) return '🪷 Lối Ra Bến Thả Hoa Đăng'
-  if (z < -65) return '🌌 Bến Hoa Đăng Sông Trăng'
+  if (z < -65) return '🌌 Bến Hoa Đăng Sông Trăng 3D'
   return '🍃 Khuôn Viên Thiền Tịnh'
 })
 
@@ -490,12 +528,20 @@ function animate() {
         }
       }
 
-      // thảm quỳ gần nhất (ưu tiên hiện "Ngồi quỳ" khi đang đứng trên thảm)
+      // thảm quỳ hoặc bồ đoàn thiền gần nhất (ưu tiên tương tác ngồi)
       nearMat = null; let bd = 1.6
       for (const m of world.mats) { const d = avatarPos.distanceTo(m); if (d < bd) { bd = d; nearMat = m } }
-      const hit = (barrier.value || nearMat) ? null : pickCenter()
+      nearMedPad = null
+      if (world.meditationPads) {
+        for (const pad of world.meditationPads) {
+          const d = avatarPos.distanceTo(pad)
+          if (d < 1.35) { nearMedPad = pad; break }
+        }
+      }
+      const hit = (barrier.value || nearMat || nearMedPad) ? null : pickCenter()
       hoverLabel.value = barrier.value === 'coi' ? '👡 Cởi dép để vào lễ — bấm 🙏'
         : barrier.value === 'mang' ? '👞 Mang dép để ra về — bấm 🙏'
+        : nearMedPad ? '🧘 Tọa thiền kiết già — bấm 🙏'
         : nearMat ? '🧎 Ngồi quỳ' : (hit ? hit.label : '')
       updateCamera(0.2)
     } else {
@@ -693,6 +739,8 @@ defineExpose({
     world?.eastWing?.waterTree()
     recordWaterTree()
   },
+  releaseRiverLantern: (sender: string, text: string, type: 'lotus_pink' | 'lotus_gold' | 'lotus_white') =>
+    world?.northSanctuary?.releaseLantern(sender, text, type),
   teleportTo: (x: number, z: number) => {
     if (avatarPos && world) {
       avatarPos.set(x, world.floorY, z)
