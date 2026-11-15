@@ -3,6 +3,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useAuth } from '~/composables/useAuth'
 import TempleMapModal from '~/components/navigation/TempleMapModal.vue'
+import FishReleaseModal from '~/components/ecosystem/FishReleaseModal.vue'
 import FishPondCanvas from '~/components/ecosystem/FishPondCanvas.vue'
 import BodhiGarden from '~/components/ecosystem/BodhiGarden.vue'
 import LanternRiver from '~/components/ecosystem/LanternRiver.vue'
@@ -13,6 +14,7 @@ import PracticeHallModal from '~/components/practice/PracticeHallModal.vue'
 const { current, cloudEnabled, init, enterAsGuest, signUp, signIn, signOut } = useAuth()
 
 const activePanel = ref<string>('')
+const templeSceneRef = ref<any>(null)
 const practiceTab = ref<'beads' | 'meditation' | 'sutras' | 'dharma'>('beads')
 const showGate = ref(true) // cửa "tự cấp tài khoản" trước khi vào
 
@@ -59,7 +61,16 @@ function onInteract(action: string) {
     closePanel()
     return
   }
-  if (action === 'modal_fish' || action === 'fish') activePanel.value = 'fish'
+  if (action === 'modal_fish_release' || action === 'fish_release') {
+    activePanel.value = 'fish_release'
+    return
+  }
+  if (action === 'modal_fish' || action === 'fish') {
+    // Dịch chuyển người chơi đến cầu đá hồ sen 3D
+    templeSceneRef.value?.teleportTo(-53, -4)
+    closePanel()
+    return
+  }
   else if (action === 'modal_bodhi' || action === 'bodhi') activePanel.value = 'bodhi'
   else if (action === 'modal_lanterns' || action === 'lanterns') activePanel.value = 'lanterns'
   else if (action === 'modal_lotus' || action === 'lotus') activePanel.value = 'lotus'
@@ -96,12 +107,19 @@ function onInteract(action: string) {
 }
 function closePanel() { activePanel.value = '' }
 
+function onFishReleased(data: { speciesId: string; name: string; releaser: string; wish: string }) {
+  if (templeSceneRef.value?.spawnFish) {
+    templeSceneRef.value.spawnFish(data.speciesId, data.name)
+  }
+  closePanel()
+}
+
 const isAltarPanel = computed(() =>
   ['incense', 'bell', 'merit', 'prayer', 'fortune'].includes(activePanel.value)
 )
 
 const isFullModal = computed(() =>
-  ['practice', 'map', 'fish', 'bodhi', 'lanterns', 'lotus', 'journal'].includes(activePanel.value)
+  ['practice', 'map', 'fish', 'fish_release', 'bodhi', 'lanterns', 'lotus', 'journal'].includes(activePanel.value)
 )
 
 const panelTitle = computed(() => ({
@@ -117,7 +135,7 @@ async function doSignOut() { await signOut(); showGate.value = true }
 
 <template>
   <div class="hh-root">
-    <TempleScene3D v-if="!showGate" @interact="onInteract" />
+    <TempleScene3D ref="templeSceneRef" v-if="!showGate" @interact="onInteract" />
 
     <!-- Cổng tài khoản: tự cấp tài khoản để vào chùa -->
     <transition name="fade">
@@ -219,6 +237,11 @@ async function doSignOut() { await signOut(); showGate.value = true }
             v-else-if="activePanel === 'map'"
             @close="closePanel"
             @select-zone="onInteract"
+          />
+          <FishReleaseModal
+            v-else-if="activePanel === 'fish_release'"
+            @close="closePanel"
+            @released="onFishReleased"
           />
           <FishPondCanvas v-else-if="activePanel === 'fish'" @close="closePanel" />
           <BodhiGarden v-else-if="activePanel === 'bodhi'" @close="closePanel" />

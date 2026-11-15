@@ -1,6 +1,7 @@
 import { ref, computed } from 'vue'
 import type { FishSpecies, PondFishItem } from '~/types/ecosystem'
 import { usePracticeJournal } from './usePracticeJournal'
+import { useSupabase } from './useSupabase'
 
 const LS_KEY = 'dco_pond_fish_v1'
 
@@ -117,9 +118,37 @@ const isInitialized = ref(false)
 
 export function useFishPond() {
   const journal = usePracticeJournal()
+  const { client } = useSupabase()
 
-  function init() {
+  async function init() {
     if (!import.meta.client || isInitialized.value) return
+
+    // Đồng bộ từ Supabase nếu có
+    if (client) {
+      try {
+        const { data, error } = await client
+          .from('pond_fish')
+          .select('*')
+          .order('released_at', { ascending: false })
+          .limit(30)
+        if (!error && data && data.length > 0) {
+          fishList.value = data.map((d: any) => ({
+            id: d.id,
+            speciesId: d.species_id || 'koi-kohaku',
+            name: d.name || 'Cá Cát Tường',
+            releaserName: d.releaser_name || 'Phật tử ẩn danh',
+            wishNote: d.wish_note || 'Nguyện muôn loài an vui.',
+            releasedAt: new Date(d.released_at).getTime(),
+            feedCount: d.feed_count || 0
+          }))
+          isInitialized.value = true
+          return
+        }
+      } catch (err) {
+        console.warn('Lỗi kết nối Supabase cho hồ cá, dùng cache local:', err)
+      }
+    }
+
     try {
       const raw = localStorage.getItem(LS_KEY)
       if (raw) {
@@ -152,14 +181,14 @@ export function useFishPond() {
     return Math.min(1.0, 0.45 + (ageDays / 30) * 0.55)
   }
 
-  // Phóng sinh một chú cá mới vào hồ
-  function releaseFish(
+  // Phóng sinh một chú cá mới vào hồ (Lưu Local + Supabase)
+  async function releaseFish(
     speciesId: string,
     fishName: string,
     releaserName: string,
     wishNote: string
-  ): PondFishItem {
-    init()
+  ): Promise<PondFishItem> {
+    await init()
 
     const newFish: PondFishItem = {
       id: 'fish-' + Math.random().toString(36).slice(2, 9),
@@ -177,17 +206,40 @@ export function useFishPond() {
     // Ghi nhận vào nhật ký
     journal.addPrayer()
 
+    // Đồng bộ lên Supabase nếu có
+    if (client) {
+      try {
+        await client.from('pond_fish').insert({
+          species_id: newFish.speciesId,
+          name: newFish.name,
+          releaser_name: newFish.releaserName,
+          wish_note: newFish.wishNote
+        })
+      } catch (err) {
+        console.warn('Không thể gửi cá lên Supabase:', err)
+      }
+    }
+
     return newFish
   }
 
   // Cho cá ăn
-  function feedFish(fishId: string) {
-    init()
+  async function feedFish(fishId?: string) {
+    await init()
+    if (!fishId && fishList.value.length > 0) {
+      fishId = fishList.value[0].id
+    }
     const fish = fishList.value.find((f) => f.id === fishId)
     if (fish) {
       fish.feedCount = (fish.feedCount || 0) + 1
       fish.lastFedAt = Date.now()
       persist()
+
+      if (client && !fish.id.startsWith('fish-seed-') && !fish.id.startsWith('fish-')) {
+        try {
+          await client.from('pond_fish').update({ feed_count: fish.feedCount }).eq('id', fish.id)
+        } catch {}
+      }
     }
   }
 

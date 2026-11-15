@@ -3,10 +3,12 @@ import * as THREE from 'three'
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
 import { buildWorld, makeSandalPair, type World } from '~/three/world'
 import { useMultiplayer } from '~/composables/useMultiplayer'
+import { useFishPond } from '~/composables/useFishPond'
 
 const emit = defineEmits<{ (e: 'interact', action: string): void }>()
 
 const mp = useMultiplayer()
+const { feedFish: recordFeedFish } = useFishPond()
 const online = mp.online
 const messages = mp.messages
 const chatText = ref('')
@@ -279,6 +281,23 @@ function doInteract() {
       setTimeout(() => { if (toast.value === hit.label) toast.value = '' }, 3500)
       return
     }
+    if (hit.action === 'fish_feed') {
+      if (world.fishPond) {
+        world.fishPond.feedFish(avatarPos)
+        recordFeedFish()
+        toast.value = '🍞 Bạn vừa rắc mồi xuống hồ! Đàn cá Koi bơi lại ríu rít… (+1 Công đức)'
+        setTimeout(() => { if (toast.value.startsWith('🍞')) toast.value = '' }, 3500)
+      }
+      emit('interact', 'fish_feed')
+      return
+    }
+    if (hit.action === 'fish_view') {
+      const count = world.fishPond?.getFishCount() || 16
+      toast.value = `🪷 Hồ Sen Tam Bảo an tịnh — hiện có ${count} chú cá Koi đang thong dong bơi lội.`
+      setTimeout(() => { if (toast.value.startsWith('🪷')) toast.value = '' }, 4000)
+      emit('interact', 'fish_view')
+      return
+    }
     emit('interact', hit.action)
   }
 }
@@ -382,7 +401,7 @@ function animate() {
       if (joyOn) { move.add(right.clone().multiplyScalar(joyVec.x)); move.add(fwd.clone().multiplyScalar(-joyVec.y)) }
       if (move.lengthSq() > 0) {
         move.normalize()
-        const newX = THREE.MathUtils.clamp(avatarPos.x + move.x * speed, world.bounds.minX, world.bounds.maxX)
+        let newX = THREE.MathUtils.clamp(avatarPos.x + move.x * speed, world.bounds.minX, world.bounds.maxX)
         let newZ = THREE.MathUtils.clamp(avatarPos.z + move.z * speed, world.bounds.minZ, world.bounds.maxZ)
         
         // VẠCH CAM: vào lễ Chánh Điện phải cởi dép, ra về phải mang dép
@@ -397,6 +416,16 @@ function animate() {
           barrier.value = ''
         }
 
+        // Va chạm bờ hồ cá: không bước chân xuống nước, chỉ được đi trên cầu đá vòm vượt hồ
+        const pRelX = (newX - (-65)) / 13.5
+        const pRelZ = (newZ - (-4)) / 8.8
+        const inPondWater = (pRelX * pRelX + pRelZ * pRelZ) < 1.0
+        const onBridge = Math.abs(newZ - (-4)) <= 2.2 && newX >= -77.5 && newX <= -52.5
+        if (inPondWater && !onBridge) {
+          newX = avatarPos.x
+          newZ = avatarPos.z
+        }
+
         avatarPos.x = newX; avatarPos.z = newZ
         avatarYaw = Math.atan2(move.x, move.z)
         const stepRate = isSprinting ? 15.5 : 10
@@ -405,7 +434,16 @@ function animate() {
       } else {
         walkAmt = Math.max(0, walkAmt - dt * 6)
       }
-      avatarPos.y = world.floorY
+
+      // Độ cao nhân vật (theo vòm cầu đá khi bước qua hồ)
+      const onBridgeNow = Math.abs(avatarPos.z - (-4)) <= 2.2 && avatarPos.x >= -77.25 && avatarPos.x <= -52.75
+      if (onBridgeNow) {
+        const bt = (avatarPos.x - (-77.25)) / 24.5
+        const archElev = Math.sin(Math.max(0, Math.min(1, bt)) * Math.PI) * 1.05 + 0.22
+        avatarPos.y = THREE.MathUtils.lerp(avatarPos.y, world.floorY + archElev, dt * 10)
+      } else {
+        avatarPos.y = THREE.MathUtils.lerp(avatarPos.y, world.floorY, dt * 10)
+      }
       placeAvatar(); animateLegs()
 
       // Dynamic FOV khi chạy nhanh (tạo cảm giác lướt gió thênh thang)
@@ -606,7 +644,17 @@ onBeforeUnmount(() => {
   renderer?.dispose()
 })
 
-defineExpose({ phase })
+defineExpose({
+  phase,
+  spawnFish: (speciesId: string, name?: string) => world?.fishPond?.spawnFish(speciesId, name),
+  feedFish: (pos?: THREE.Vector3) => world?.fishPond?.feedFish(pos || avatarPos),
+  teleportTo: (x: number, z: number) => {
+    if (avatarPos && world) {
+      avatarPos.set(x, world.floorY, z)
+      cam.yaw = 0
+    }
+  }
+})
 </script>
 
 <template>

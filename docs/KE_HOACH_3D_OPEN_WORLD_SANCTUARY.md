@@ -196,10 +196,13 @@ gantt
 * [x] Trồng các rặng trúc xanh đu đưa theo gió, thảm cao nguyên đồi cỏ, hệ thống Thạch Đăng cổ kính ban đêm phát quang vàng ấm, biển chỉ dẫn thư pháp và ghế đá thiền tịnh.
 * [x] Nâng cấp Controller: Hỗ trợ chạy nhanh Zen Sprint bằng phím `Shift` (PC) hoặc nút `🏃 Chạy / 🚶 Đi` (Mobile), cuộn chuột thu phóng 360° tự do, đa điểm Multi-touch cảm ứng trên di động siêu mượt, nhận diện phân khu (Zone Badge HUD).
 
-#### 📌 Phase 2: Xây dựng Hồ Cá Phóng Sinh 3D & Cầu Đá Đài Sen
-* [ ] Tạo mô hình hồ nước ngọc bích, bờ đá cuội và cầu đá cong vòm vượt hồ.
-* [ ] Lập trình đàn cá Koi 3D chuyển động bơi lượn uốn lượn dưới nước theo thuật toán bầy đàn.
-* [ ] Gắn điểm tương tác `Interactive`: Đứng trên cầu bấm nút để rắc thức ăn hoặc phóng sinh cá mới (lưu thẳng Supabase).
+#### 📌 Phase 2: Xây dựng Hồ Cá Phóng Sinh 3D & Cầu Đá Đài Sen (ĐÃ HOÀN THÀNH ✅)
+* [x] Tạo mô hình lòng hồ nước ngọc bích sâu 3m, bờ kè đá cuội quanh hồ, shader mặt nước chuyển động sóng dập dềnh phản chiếu, đài sen đá phun nước giữa hồ với hiệu ứng bọt nước sủi bọt và 4 cụm hoa sen hồng nở rộ bồng bềnh trên lá sen ngọc bích.
+* [x] Dựng cầu đá vòm cong (Arched Stone Bridge) dài 24.5m vắt ngang qua hồ từ bờ Đông sang bờ Tây, lan can đá với chóp búp sen, vật lý bậc cầu cong nâng hạ độ cao nhân vật mượt mà theo dáng vòm Parabol khi sải bước qua hồ, ngăn nhân vật rớt xuống nước.
+* [x] Mô hình đàn cá Koi 3D khớp chuyển động (khớp đuôi uốn lượn, vây bơi, mắt) với 5 biến thể màu sắc (Kohaku đỏ trắng, Taisho Sanke tam thể, Yamabuki Ogon hoàng kim, Cá chép đỏ cam, Showa đen đỏ).
+* [x] Thuật toán bầy đàn (Boids Flocking Simulation) đa tầng: bơi tuần tra ngẫu nhiên, uốn lượn theo nhịp sin, tránh bờ hồ đá cuội và tránh va chạm trụ đài sen.
+* [x] Cơ chế Rắc Mồi (`fish_feed`): Thả các viên thức ăn vàng óng rơi xuống nước tạo vòng sóng lan tỏa (Water Ripples), đàn cá ngửi thấy mùi lập tức bơi nhanh về phía thức ăn và nổi lên đớp mồi, tăng lượt cho ăn và cộng công đức tu tập.
+* [x] Cơ chế Phóng Sinh Cá Cát Tường (`fish_release`): Bến gỗ phóng sinh bên bờ hồ, modal chọn loài cá, đặt tên chú cá, gửi gắm lời chúc nguyện, sinh ngay chú cá 3D bơi lội trong hồ và lưu vĩnh viễn vào Supabase table `pond_fish` cùng bộ nhớ máy.
 
 #### 📌 Phase 3: Xây dựng Vườn Bồ Đề Tâm 3D & Lầu Chuông Đại Hồng Chung
 * [ ] Dựng cây Bồ Đề đại thụ tán xòe bóng mát, rễ nổi và hệ thống dải lụa đỏ lay động theo gió.

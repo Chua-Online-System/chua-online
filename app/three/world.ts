@@ -5,6 +5,7 @@
  */
 import * as THREE from 'three'
 import { buildExpandedLandscape } from './landscape'
+import { buildFishPond3D, type FishPond3DController } from './fishPond3D'
 
 export interface Interactive {
   object: THREE.Object3D
@@ -19,6 +20,7 @@ export interface World {
   interactives: Interactive[]
   climbPath: THREE.Vector3[]
   bell?: { pivot: THREE.Object3D; swing: (strength: number) => void }
+  fishPond?: FishPond3DController
   floorY: number
   bounds: { minX: number; maxX: number; minZ: number; maxZ: number }
   sandalSpot: THREE.Vector3
@@ -566,9 +568,12 @@ export function buildWorld(scene: THREE.Scene): World {
   // --- CẢNH QUAN MỞ RỘNG 200M X 200M (PHASE 1: THẾ GIỚI MỞ LIỀN MẠCH) ---
   buildExpandedLandscape(root, floorY, updaters, interactives)
 
-  // Nhãn + vòng sáng cho mọi điểm tương tác (bỏ qua biển chỉ dẫn vì đã có bảng gỗ 3D)
+  // --- HỒ CÁ PHÓNG SINH 3D & CẦU ĐÁ ĐÀI SEN (PHASE 2) ---
+  const fishPond = buildFishPond3D(root, floorY, updaters, interactives)
+
+  // Nhãn + vòng sáng cho các điểm tâm linh (bỏ qua biển chỉ dẫn và hồ cá vì đã có kiến trúc 3D riêng)
   for (const it of interactives) {
-    if (it.action.startsWith('signpost_')) continue
+    if (it.action.startsWith('signpost_') || it.action.startsWith('fish_')) continue
     const p = it.object.position
     root.add(stationMarker(p.x, floorY, p.z, it.label, floorY + 4.6, updaters))
   }
@@ -576,6 +581,7 @@ export function buildWorld(scene: THREE.Scene): World {
   return {
     root, updaters, interactives, climbPath,
     bell: { pivot: bell.pivot, swing: bell.swing },
+    fishPond,
     floorY,
     bounds: { minX: -88, maxX: 88, minZ: -94, maxZ: 62 },
     sandalSpot, mats, coiDepZ

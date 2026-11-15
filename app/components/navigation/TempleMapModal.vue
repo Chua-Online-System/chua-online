@@ -21,12 +21,12 @@ const TEMPLE_ZONES: TempleZone[] = [
   },
   {
     id: 'ho-phong-sinh',
-    name: 'Hồ Cá Phóng Sinh',
-    eyebrow: 'Từ bi phóng sanh',
-    description: 'Hồ nước trong biếc với đàn cá Koi Kohaku, Yamabuki bơi lội an vui. Thả cá ảo và rắc mồi nuôi dưỡng tâm từ bi.',
+    name: 'Hồ Sen & Đàn Cá Koi 3D',
+    eyebrow: 'Từ bi phóng sanh · Thế giới 3D',
+    description: 'Hồ sen ngọc bích với đàn cá Koi Kohaku, Yamabuki bơi lội mềm mại dưới chân cầu đá vòm. Có thể thả cá 3D và rắc mồi nuôi dưỡng tâm từ bi.',
     icon: '🐟',
     category: 'nature',
-    badge: 'Mới · Sinh thái',
+    badge: '3D Sinh Thái',
     posX: 22,
     posY: 66,
     targetAction: 'modal_fish'
