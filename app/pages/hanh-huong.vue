@@ -15,10 +15,20 @@ import PracticeHallModal from '~/components/practice/PracticeHallModal.vue'
 import MeritToast from '~/components/merit/MeritToast.vue'
 import MeritLevelUpModal from '~/components/merit/MeritLevelUpModal.vue'
 import MeritProfileModal from '~/components/merit/MeritProfileModal.vue'
+import CheckInModal from '~/components/merit/CheckInModal.vue'
 import { useMeritSystem } from '~/composables/useMeritSystem'
 
 const { current, cloudEnabled, init, enterAsGuest, signUp, signIn, signOut } = useAuth()
-const { profile, currentTierInfo, earnMerit, init: initMerit } = useMeritSystem()
+const {
+  profile,
+  currentTierInfo,
+  earnMerit,
+  init: initMerit,
+  checkInModalOpen,
+  openCheckInModal,
+  closeCheckInModal,
+  canCheckInToday
+} = useMeritSystem()
 
 const activePanel = ref<string>('')
 const templeSceneRef = ref<any>(null)
@@ -67,6 +77,15 @@ function onInteract(action: string) {
     return
   }
   if (action === 'route_3d') {
+    closePanel()
+    return
+  }
+  if (action === 'modal_check_in' || action === 'check_in') {
+    openCheckInModal()
+    return
+  }
+  if (action === 'modal_diem_danh' || action === 'diem-danh') {
+    templeSceneRef.value?.teleportTo(18, 20)
     closePanel()
     return
   }
@@ -239,6 +258,11 @@ async function doSignOut() { await signOut(); showGate.value = true }
         <span>🏮</span>
         <span class="hidden sm:inline">Nhật ký</span>
       </button>
+      <button @click="openCheckInModal" class="btn-hud btn-checkin" title="Sổ Điểm Danh Tinh Tấn">
+        <span>📅</span>
+        <span class="hidden sm:inline">Điểm danh</span>
+        <span v-if="canCheckInToday()" class="w-2 h-2 rounded-full bg-amber-400 animate-ping ml-0.5" />
+      </button>
       <button @click="showMeritModal = true" class="btn-hud btn-merit" title="Sổ Công Đức Tu Học">
         <span>{{ currentTierInfo.badge }}</span>
         <span class="font-serif font-bold text-amber-300">{{ profile.totalMerit }}</span>
@@ -345,6 +369,26 @@ async function doSignOut() { await signOut(); showGate.value = true }
           </div>
         </div>
       </transition>
+
+      <!-- Modal Điểm Danh Tinh Tấn (Phase 2) -->
+      <transition
+        enter-active-class="transition duration-300 ease-out"
+        enter-from-class="opacity-0"
+        enter-to-class="opacity-100"
+        leave-active-class="transition duration-200 ease-in"
+        leave-from-class="opacity-100"
+        leave-to-class="opacity-0"
+      >
+        <div
+          v-if="checkInModalOpen"
+          class="fixed inset-0 z-50 flex items-center justify-center bg-black/65 p-4 backdrop-blur-sm overflow-y-auto"
+          @click.self="closeCheckInModal"
+        >
+          <div class="w-full max-w-2xl my-auto animate-fade-up">
+            <CheckInModal @close="closeCheckInModal" />
+          </div>
+        </div>
+      </transition>
     </ClientOnly>
   </div>
 </template>
@@ -403,6 +447,15 @@ async function doSignOut() { await signOut(); showGate.value = true }
 }
 .btn-merit:hover {
   background: linear-gradient(135deg, rgba(217, 185, 105, 0.4), rgba(180, 134, 63, 0.25));
+  border-color: #ffd54f;
+  box-shadow: 0 0 12px rgba(255, 213, 79, 0.35);
+}
+.btn-checkin {
+  background: linear-gradient(135deg, rgba(255, 179, 0, 0.2), rgba(180, 134, 63, 0.15));
+  border-color: rgba(255, 179, 0, 0.45);
+}
+.btn-checkin:hover {
+  background: linear-gradient(135deg, rgba(255, 179, 0, 0.38), rgba(217, 185, 105, 0.3));
   border-color: #ffd54f;
   box-shadow: 0 0 12px rgba(255, 213, 79, 0.35);
 }

@@ -118,6 +118,100 @@ export function calculateTier(points: number): TierInfo {
   return MERIT_TIERS[0]
 }
 
+export interface DailyBlessing {
+  id: number
+  quote: string
+  author: string
+  meaning: string
+}
+
+export const BUDDHIST_BLESSINGS: DailyBlessing[] = [
+  {
+    id: 1,
+    quote: 'Tâm bình thế giới bình, tâm an vạn sự an.',
+    author: 'Lời Phật Dạy',
+    meaning: 'Khi giữ được tâm thái an tịnh trước sóng gió, vạn vật xung quanh tự khắc sẽ an hòa.'
+  },
+  {
+    id: 2,
+    quote: 'Hạnh phúc không nằm ở đích đến, mà ở từng bước chân chánh niệm hôm nay.',
+    author: 'Thiền Sư Thích Nhất Hạnh',
+    meaning: 'Hãy trân trọng giây phút hiện tại, mỗi hơi thở là một phép mầu của cuộc sống.'
+  },
+  {
+    id: 3,
+    quote: 'Lấy từ bi xóa bỏ hận thù, lấy nhẫn nhục chuyển hóa nghịch cảnh.',
+    author: 'Kinh Pháp Cú',
+    meaning: 'Oán kết không thể giải bằng oán kết, chỉ có lòng từ bi mới dập tắt được lửa sân hận.'
+  },
+  {
+    id: 4,
+    quote: 'Mỗi buổi sớm mai thức dậy, hãy mỉm cười đón nhận 24 giờ tinh khôi để tu học.',
+    author: 'Lời Phật Dạy',
+    meaning: 'Mỗi ngày mới là một cơ hội thiện lành để gieo trồng phước đức và tình thương yêu.'
+  },
+  {
+    id: 5,
+    quote: 'Nước trong nhờ lắng cặn, lòng thanh tịnh nhờ biết buông bỏ.',
+    author: 'Kinh Kim Cang',
+    meaning: 'Buông bỏ những phiền muộn vướng mắc để tâm hồn được nhẹ nhàng, thanh thoát.'
+  },
+  {
+    id: 6,
+    quote: 'Một ngọn nến có thể thắp sáng hàng ngàn ngọn nến khác mà không bị hao mòn.',
+    author: 'Kinh Di Giáo',
+    meaning: 'Hạnh phúc và lòng tốt khi được sẻ chia sẽ nhân lên gấp bội trong cộng đồng.'
+  },
+  {
+    id: 7,
+    quote: 'Hãy làm hòn đảo nương tựa cho chính mình, thắp sáng ngọn đèn chánh pháp nội tâm.',
+    author: 'Kinh Đại Bát Niết Bàn',
+    meaning: 'Tự mình nỗ lực tinh tấn mỗi ngày, đó là bến đỗ bình an và vững chãi nhất.'
+  }
+]
+
+export function getTodayBlessing(): DailyBlessing {
+  const d = new Date()
+  const dayOfYear = Math.floor((d.getTime() - new Date(d.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24))
+  return BUDDHIST_BLESSINGS[dayOfYear % BUDDHIST_BLESSINGS.length]
+}
+
+export interface WeekDayStatus {
+  dayIndex: number     // 1 to 7
+  label: string        // "Ngày 1" ... "Ngày 7"
+  points: number       // 20, 20, 30, 20, 20, 20, 50
+  bonus: number        // 0, 0, 10, 0, 0, 0, 30
+  status: 'completed' | 'today' | 'upcoming'
+}
+
+export function getWeekStreakDays(streakDays: number, canCheckIn: boolean): WeekDayStatus[] {
+  const completedInCycle = canCheckIn ? (streakDays % 7) : ((streakDays - 1) % 7) + 1
+  const todayCycleIndex = canCheckIn ? completedInCycle + 1 : completedInCycle
+
+  const days: WeekDayStatus[] = []
+  for (let i = 1; i <= 7; i++) {
+    const bonus = i === 3 ? 10 : i === 7 ? 30 : 0
+    let status: 'completed' | 'today' | 'upcoming' = 'upcoming'
+    if (canCheckIn) {
+      if (i <= completedInCycle) status = 'completed'
+      else if (i === todayCycleIndex) status = 'today'
+      else status = 'upcoming'
+    } else {
+      if (i <= todayCycleIndex) status = 'completed'
+      else status = 'upcoming'
+    }
+
+    days.push({
+      dayIndex: i,
+      label: `Ngày ${i}`,
+      points: 20 + bonus,
+      bonus,
+      status
+    })
+  }
+  return days
+}
+
 export interface MeritToastData {
   id: number
   amount: number
@@ -144,6 +238,7 @@ const profile = reactive<MeritProfile>({
 
 const initialized = ref(false)
 export const activeMeritToast = ref<MeritToastData | null>(null)
+export const checkInModalOpen = ref(false)
 let toastTimer: any = null
 
 const levelUpModal = ref<{
@@ -368,7 +463,8 @@ export function useMeritSystem() {
     if (profile.streakDays === 3) bonus = 10
     else if (profile.streakDays === 7) bonus = 30
     else if (profile.streakDays === 14) bonus = 60
-    else if (profile.streakDays === 30) bonus = 150
+    else if (profile.streakDays === 30 || (profile.streakDays > 30 && profile.streakDays % 30 === 0)) bonus = 150
+    else if (profile.streakDays > 7 && profile.streakDays % 7 === 0) bonus = 30
 
     const totalCheckIn = basePoints + bonus
     const desc = bonus > 0
@@ -450,12 +546,23 @@ export function useMeritSystem() {
   const currentTierInfo = computed(() => calculateTier(profile.totalMerit))
   const dailyRemainingPoints = computed(() => Math.max(0, MAX_DAILY_REGULAR_POINTS - profile.todayPoints))
 
+  function openCheckInModal() {
+    checkInModalOpen.value = true
+  }
+
+  function closeCheckInModal() {
+    checkInModalOpen.value = false
+  }
+
   return {
     profile,
     init,
     earnMerit,
     canCheckInToday,
     performCheckIn,
+    checkInModalOpen,
+    openCheckInModal,
+    closeCheckInModal,
     currentTierInfo,
     dailyRemainingPoints,
     activeMeritToast,
@@ -466,6 +573,8 @@ export function useMeritSystem() {
     setOutfit,
     unlockOutfit,
     calculateTier,
+    getWeekStreakDays,
+    getTodayBlessing,
     MAX_DAILY_REGULAR_POINTS
   }
 }

@@ -91,6 +91,18 @@ const TEMPLE_ZONES: TempleZone[] = [
     targetAction: 'modal_meditation'
   },
   {
+    id: 'so-diem-danh',
+    name: 'Sổ Điểm Danh Tinh Tấn',
+    eyebrow: 'Mỗi ngày một niệm lành',
+    description: 'Bảng gỗ cổ kính tại sân chùa ghi nhận chuỗi ngày viếng chùa tinh tấn, nhận điểm công đức và mở khóa hào quang quang minh.',
+    icon: '📅',
+    category: 'merit',
+    badge: 'Hàng ngày',
+    posX: 62,
+    posY: 52,
+    targetAction: 'modal_check_in'
+  },
+  {
     id: 'so-vang-cau-an',
     name: 'Khu Cầu An & Sổ Vàng',
     eyebrow: 'Hồi hướng công đức',

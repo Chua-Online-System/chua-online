@@ -187,6 +187,9 @@ export function createWorldColliders(): Collider[] {
     list.push({ type: 'circle', x: bx, z: bz, radius: 0.8, name: `Đá viền Bồ Đề ${i + 1}` })
   }
 
+  // 16. BẢNG SỔ ĐIỂM DANH TINH TẤN (18, 20)
+  list.push({ type: 'circle', x: 18.0, z: 20.0, radius: 1.15, name: 'Bảng Sổ Điểm Danh' })
+
   return list
 }
 

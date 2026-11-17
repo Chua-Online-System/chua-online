@@ -11,6 +11,7 @@ const {
   dailyRemainingPoints,
   canCheckInToday,
   performCheckIn,
+  openCheckInModal,
   toggleAura,
   MAX_DAILY_REGULAR_POINTS
 } = useMeritSystem()
@@ -34,7 +35,8 @@ const dailyProgressPercent = computed(() => {
 })
 
 function onCheckIn() {
-  performCheckIn()
+  emit('close')
+  openCheckInModal()
 }
 
 function formatDate(ts: number) {
@@ -267,3 +269,4 @@ function formatDate(ts: number) {
     </div>
   </div>
 </template>
+

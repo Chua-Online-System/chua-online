@@ -157,18 +157,21 @@ Người chơi dùng điểm công đức tích lũy để quy đổi (mở khó
 
 ### PHASE 2: SỔ ĐIỂM DANH TINH TẤN & CHUỖI STREAK (DAILY CHECK-IN)
 > **Mục tiêu:** Xây dựng tính năng điểm danh hàng ngày, thúc đẩy người dùng ghé thăm chùa mỗi ngày.
+> **Trạng thái:** ✅ **ĐÃ HOÀN THÀNH TOÀN BỘ (100%)**
 
-- [ ] **Task 2.1: Logic điểm danh và duy trì chuỗi (Streak Engine):**
+- [x] **Task 2.1: Logic điểm danh và duy trì chuỗi (Streak Engine):**
   - So sánh ngày hiện tại với `lastCheckInDate`.
   - Nếu là ngày tiếp theo: `streakDays++`. Nếu bị ngắt quãng quá 1 ngày: reset về 1.
-  - Tính thưởng thêm điểm công đức ở các cột mốc: 3 ngày, 7 ngày, 14 ngày, 30 ngày.
-- [ ] **Task 2.2: Giao diện Modal "Sổ Điểm Danh Tinh Tấn" (`CheckInModal.vue`):**
+  - Tính thưởng thêm điểm công đức ở các cột mốc: 3 ngày (+10đ), 7 ngày (+30đ), 14 ngày (+60đ), 30 ngày (+150đ), và các chu kỳ tiếp theo.
+  - Tích hợp 7 lời chúc kinh Phật khai tâm ngẫu nhiên hàng ngày (`BUDDHIST_BLESSINGS`).
+- [x] **Task 2.2: Giao diện Modal "Sổ Điểm Danh Tinh Tấn" (`CheckInModal.vue`):**
   - Thiết kế bảng lịch 7 ngày trong tuần với biểu tượng hoa sen nở theo từng ngày đã điểm danh.
-  - Nút bấm *"Điểm Danh Đầu Ngày"* mạ vàng phát sáng trang nhã.
+  - Nút bấm *"Điểm Danh Đầu Ngày"* mạ vàng phát sáng trang nhã kèm âm thanh chuông thanh thoát.
   - Lời chúc cát tường ngẫu nhiên mỗi sáng kèm câu kinh Phật khai tâm.
-- [ ] **Task 2.3: Bổ sung Bảng Điểm Danh gỗ tại Sân Chùa Đại Lễ:**
-  - Đặt một biển gỗ chạm khắc cổ kính tại sân chùa ($X: 18, Z: 20$) với nhãn `📅 Sổ Điểm Danh Tinh Tấn`.
+- [x] **Task 2.3: Bổ sung Bảng Điểm Danh gỗ tại Sân Chùa Đại Lễ:**
+  - Đặt một biển gỗ chạm khắc cổ kính tại sân chùa ($X: 18, Z: 20$) với nhãn `📅 Sổ Điểm Danh Tinh Tấn` (mái ngói cổ kính, lồng đèn đỏ đung đưa, án thư gỗ lim).
   - Người chơi bước lại gần bấm phím tương tác để mở giao diện điểm danh trực tiếp trong 3D.
+  - Thêm vật lý va chạm (collider) tại $(X: 18, Z: 20)$ và hiển thị địa danh trên MiniMapRadar & TempleMapModal.
 
 ---
 

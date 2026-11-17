@@ -447,6 +447,13 @@ function doInteract() {
       emit('interact', 'meditation_sit')
       return
     }
+    if (hit.action === 'check_in') {
+      playBell()
+      toast.value = '📅 Mở Sổ Điểm Danh Tinh Tấn…'
+      setTimeout(() => { if (toast.value.startsWith('📅')) toast.value = '' }, 2500)
+      emit('interact', 'modal_check_in')
+      return
+    }
     emit('interact', hit.action)
   }
 }

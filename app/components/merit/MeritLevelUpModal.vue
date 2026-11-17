@@ -117,3 +117,4 @@ const haloDetails: Record<number, { title: string; desc: string; icon: string }>
     </div>
   </transition>
 </template>
+

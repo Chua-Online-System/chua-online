@@ -335,6 +335,147 @@ export function buildStoneBench(x: number, y: number, z: number, rotationY = 0) 
 }
 
 /**
+ * Bảng Sổ Điểm Danh Tinh Tấn (Gỗ Lim & Sơn Son Thếp Vàng)
+ * Đặt tại sân chùa Đại Lễ (X: 18, Z: 20)
+ */
+export function buildCheckInKiosk(
+  x: number,
+  y: number,
+  z: number,
+  interactives?: Interactive[],
+  updaters?: World['updaters']
+) {
+  const g = new THREE.Group()
+  const M = LandscapeMats
+
+  // 1. Chân đế đá hoa cương 2 bậc
+  g.add(makeBox(2.8, 0.35, 1.8, M.stoneBorder(), 0, 0.175, 0))
+  g.add(makeBox(2.4, 0.25, 1.4, M.stoneLight(), 0, 0.475, 0))
+
+  // 2. Hai cột gỗ lim
+  const colL = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.16, 3.2, 10), M.signWood())
+  colL.position.set(-1.0, 1.9, 0)
+  colL.castShadow = true
+  const colR = colL.clone()
+  colR.position.set(1.0, 1.9, 0)
+  g.add(colL, colR)
+
+  // Xà ngang nối 2 cột
+  g.add(makeBox(2.4, 0.22, 0.25, M.signWood(), 0, 3.4, 0))
+
+  // 3. Mái ngói cong cổ kính
+  const roof = new THREE.Mesh(new THREE.ConeGeometry(2.2, 0.7, 4), M.tileDark())
+  roof.rotation.y = Math.PI / 4
+  roof.scale.set(1.4, 1.0, 0.9)
+  roof.position.y = 3.85
+  roof.castShadow = true
+  g.add(roof)
+
+  // Búp sen vàng đỉnh mái
+  const bud = new THREE.Mesh(new THREE.SphereGeometry(0.18, 10, 8), M.lampGold())
+  bud.position.y = 4.3
+  g.add(bud)
+
+  // 4. Bảng gỗ sơn mài đỏ viền chỉ vàng
+  const board = makeBox(2.1, 1.35, 0.15, M.signWood(), 0, 2.4, 0)
+  board.add(makeBox(1.95, 1.2, 0.05, M.signRed(), 0, 0, 0.07))
+  g.add(board)
+
+  // Canvas vẽ chữ thư pháp
+  const canvas = document.createElement('canvas')
+  canvas.width = 512
+  canvas.height = 256
+  const ctx = canvas.getContext('2d')!
+
+  ctx.fillStyle = '#5c1914'
+  ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+  // Khung viền chỉ vàng kép
+  ctx.strokeStyle = '#d4af5a'
+  ctx.lineWidth = 10
+  ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20)
+  ctx.lineWidth = 3
+  ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40)
+
+  // Tiêu đề
+  ctx.fillStyle = '#ffdf78'
+  ctx.font = 'bold 38px "Noto Serif", serif'
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.fillText('📅 SỔ ĐIỂM DANH', canvas.width / 2, 60)
+
+  ctx.fillStyle = '#ffe082'
+  ctx.font = 'bold 32px "Noto Serif", serif'
+  ctx.fillText('TINH TẤN TU HỌC', canvas.width / 2, 110)
+
+  // Phụ đề
+  ctx.font = 'italic 22px "Be Vietnam Pro", sans-serif'
+  ctx.fillStyle = '#ebd5bd'
+  ctx.fillText('Mỗi Ngày Một Niệm Lành', canvas.width / 2, 168)
+  ctx.font = '20px "Be Vietnam Pro", sans-serif'
+  ctx.fillStyle = '#ffd54f'
+  ctx.fillText('✦ Bấm để nhận +20 Công Đức ✦', canvas.width / 2, 208)
+
+  const tex = new THREE.CanvasTexture(canvas)
+  tex.colorSpace = THREE.SRGBColorSpace
+  const signPlane = new THREE.Mesh(
+    new THREE.PlaneGeometry(1.9, 1.15),
+    new THREE.MeshStandardMaterial({ map: tex, roughness: 0.4 })
+  )
+  signPlane.position.set(0, 2.4, 0.13)
+  g.add(signPlane)
+
+  // Mặt sau
+  const signBack = signPlane.clone()
+  signBack.rotation.y = Math.PI
+  signBack.position.set(0, 2.4, -0.13)
+  g.add(signBack)
+
+  // 5. Đèn lồng đỏ treo 2 bên cột
+  for (const side of [-1, 1]) {
+    const lampG = new THREE.Group()
+    const lampBody = new THREE.Mesh(new THREE.SphereGeometry(0.24, 12, 10), M.lampGlow())
+    lampBody.scale.y = 1.2
+    lampG.add(lampBody)
+    const tassel = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.35, 6), M.lampGold())
+    tassel.position.y = -0.45
+    lampG.add(tassel)
+    lampG.position.set(side * 1.35, 3.1, 0)
+    g.add(lampG)
+    if (updaters) {
+      const phase = Math.random() * 6
+      updaters.push((t) => {
+        lampG.rotation.z = Math.sin(t * 1.5 + phase) * 0.08
+      })
+    }
+  }
+
+  // 6. Bàn hương án đặt cuốn kinh thư dưới chân bảng
+  const table = makeBox(1.6, 0.75, 0.65, M.signWood(), 0, 0.95, 0.35)
+  const book = makeBox(0.7, 0.08, 0.45, M.signRed(), 0, 0.42, 0)
+  table.add(book)
+  g.add(table)
+
+  g.position.set(x, y, z)
+
+  if (interactives) {
+    const hitGeo = new THREE.Mesh(
+      new THREE.BoxGeometry(3.2, 3.8, 3.2),
+      new THREE.MeshBasicMaterial({ visible: false })
+    )
+    hitGeo.position.set(x, y + 1.9, z)
+    interactives.push({
+      object: hitGeo,
+      action: 'check_in',
+      label: '📅 Sổ Điểm Danh Tinh Tấn – Bấm để điểm danh',
+      focus: new THREE.Vector3(x, y + 1.9, z + 2.8)
+    })
+  }
+
+  return g
+}
+
+/**
  * XÂY DỰNG TOÀN BỘ CẢNH QUAN MỞ RỘNG 200M X 200M (PHASE 1)
  */
 export function buildExpandedLandscape(
@@ -556,6 +697,13 @@ export function buildExpandedLandscape(
       'left',
       interactives
     )
+  )
+
+  // =========================================================================
+  // 5.5. BẢNG SỔ ĐIỂM DANH TINH TẤN (Sân Chùa Đại Lễ X: 18, Z: 20)
+  // =========================================================================
+  landscapeGroup.add(
+    buildCheckInKiosk(18, floorY, 20, interactives, updaters)
   )
 
   // =========================================================================

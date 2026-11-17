@@ -45,6 +45,7 @@ const landmarks = [
   { id: 'vuon-bo-de', name: 'Vườn Bồ Đề Tâm', icon: '🌳', x: 64, z: -12, color: '#81c784' },
   { id: 'ben-hoa-dang', name: 'Bến Hoa Đăng Sông Trăng', icon: '🪷', x: 0, z: -84, color: '#ba68c8' },
   { id: 'thien-duong', name: 'Nhà Tụng Kinh & Thiền Đường', icon: '🧘', x: -48, z: -48, color: '#ffb74d' },
+  { id: 'diem-danh', name: 'Sổ Điểm Danh Tinh Tấn', icon: '📅', x: 18, z: 20, color: '#ffb300' },
   { id: 'tam-quan', name: 'Cổng Tam Quan', icon: '⛩️', x: 0, z: 48, color: '#e57373' }
 ]
 
