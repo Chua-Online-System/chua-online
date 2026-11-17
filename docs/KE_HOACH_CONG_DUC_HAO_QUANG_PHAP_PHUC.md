@@ -177,18 +177,20 @@ Người chơi dùng điểm công đức tích lũy để quy đổi (mở khó
 
 ### PHASE 3: HIỆU ỨNG HÀO QUANG 3D THEO CẤP (3D AURA & HALO SYSTEM)
 > **Mục tiêu:** Tạo dựng mô hình đồ họa 3D cho 5 tầng hào quang trong `TempleScene3D.client.vue`.
+> **Trạng thái:** ✅ **ĐÃ HOÀN THÀNH TOÀN BỘ (100%)**
 
-- [ ] **Task 3.1: Dựng các khối hình học Hào quang (Three.js Halo Meshes):**
-  - **Vòng hào quang bạc (Cấp 2):** `RingGeometry(0.32, 0.46, 32)` phát ánh sáng trắng ấm `0xffffff`, gắn phía sau đầu avatar ($Y + 2.35\text{m}, Z - 0.15\text{m}$).
-  - **Hào quang kim sắc & Hạt bụi sáng (Cấp 3):** Vòng hào quang kép vàng kim `0xffd54f`, kèm 8 particle `SphereGeometry(0.025)` bay lượn xung quanh.
-  - **Đài sen quang minh xoay (Cấp 4):** Vòng hào quang khắc cánh sen xoay chậm quanh trục $Z$, kết hợp quầng sáng chiếu xuống mặt cỏ quanh chân.
-  - **Thất sắc quang minh (Cấp 5):** Quầng sáng ngũ sắc rực rỡ biến chuyển màu mềm mại theo thời gian (`HSV color cycle`).
-- [ ] **Task 3.2: Bộ cập nhật Animation trong `animate()` loop:**
-  - Tạo nhịp thở phát quang (`emissiveIntensity` dao động hình sin từ $0.6 \to 1.1$).
-  - Xoay nhẹ luân xa sen ở Cấp 4 và Cấp 5 theo tốc độ $\approx 0.4\text{ rad/s}$.
-  - Hạt bụi sáng quay quanh tâm đầu theo hàm lượng giác $\cos(t), \sin(t)$.
-- [ ] **Task 3.3: Tùy chọn Ẩn / Hiện Hào quang:**
-  - Nút chuyển đổi nhanh trong menu cài đặt giúp người chơi có thể tạm tắt hào quang nếu muốn tịnh tâm mộc mạc.
+- [x] **Task 3.1: Dựng các khối hình học Hào quang (Three.js Halo Meshes):**
+  - **Vòng hào quang bạc (Cấp 2):** `RingGeometry(0.32, 0.46, 36)` phát ánh sáng trắng ấm `0xf0f4f8`, gắn phía sau đầu avatar ($Y: 2.32\text{m}, Z: -0.16\text{m}$).
+  - **Hào quang kim sắc & Hạt bụi sáng (Cấp 3):** Vòng hào quang kép vàng kim `0xffd54f` & `0xfff176`, kèm 8 particle `SphereGeometry(0.025)` bay lượn quỹ đạo quanh đầu.
+  - **Đài sen quang minh xoay (Cấp 4):** Vòng hào quang 12 cánh sen xoay 3D quanh trục $Z$ sau đầu, kết hợp quầng hào quang phát sáng dưới mặt đất quanh chân avatar.
+  - **Thất sắc quang minh (Cấp 5):** Quầng sáng thất sắc rực rỡ luân chuyển chu kỳ màu nhiệm màu (`HSV Rainbow Cycle`), 2 luân xa sen xoay ngược chiều, 12 hạt tinh tú đa chiều, và hiệu ứng dấu chân hoa sen nở bừng rồi tan biến dưới từng bước đi.
+- [x] **Task 3.2: Bộ cập nhật Animation trong `animate()` loop:**
+  - Nhịp thở phát quang hình sin êm dịu (`breath = 0.65 + sin(t*2.2)*0.22`).
+  - Xoay luân xa sen ở Cấp 4 và Cấp 5 theo tốc độ $\approx 0.42\text{ rad/s}$.
+  - Hạt bụi sáng quay quanh đầu theo quỹ đạo sóng điều hòa $\cos(t), \sin(t)$.
+  - Tự động spawn và làm mờ các đóa sen bước chân sau $1.6\text{s}$.
+- [x] **Task 3.3: Tùy chọn Ẩn / Hiện Hào quang:**
+  - Nút chuyển đổi nhanh `✨ Hào quang / Ẩn quang` trên thanh HUD góc trên và trong modal Sổ Công Đức, bật/tắt tức thì không cần reload.
 
 ---
 

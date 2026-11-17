@@ -10,6 +10,7 @@ import { useBodhiTree } from '~/composables/useBodhiTree'
 import { usePracticeJournal } from '~/composables/usePracticeJournal'
 import { useSpatialAudio } from '~/composables/useSpatialAudio'
 import { useMeritSystem } from '~/composables/useMeritSystem'
+import { createAuraHalo, type AuraController } from '~/three/auraHalo3D'
 import MiniMapRadar from '~/components/navigation/MiniMapRadar.vue'
 
 const emit = defineEmits<{ (e: 'interact', action: string): void }>()
@@ -18,10 +19,21 @@ const mp = useMultiplayer()
 const { feedFish: recordFeedFish } = useFishPond()
 const { playBell, playWoodenFish } = useSound()
 const { waterTree: recordWaterTree, canWaterToday } = useBodhiTree()
-const { earnMerit } = useMeritSystem()
+const meritSystem = useMeritSystem()
+const { earnMerit, profile: meritProfile } = meritSystem
 const journal = usePracticeJournal()
 const spatialAudio = useSpatialAudio()
 const playerCoords = reactive({ x: 0, z: 78, yaw: Math.PI })
+
+// --- Hào quang 3D theo cấp bậc công đức (Phase 3) ---
+let auraCtrl: AuraController | null = null
+
+watch(
+  [() => meritProfile.currentTier, () => meritProfile.showAura],
+  ([newTier, show]) => {
+    auraCtrl?.setTier(newTier, show)
+  }
+)
 
 function ensureAudioStarted() {
   if (!spatialAudio.isStarted.value) {
@@ -654,6 +666,10 @@ function animate() {
   // hết hạn bong bóng chat
   const nowMs = performance.now()
   for (const [id, b] of bubbles) { if (nowMs > b.hideAt) { b.group.remove(b.sprite); bubbles.delete(id) } }
+
+  // Cập nhật hoạt cảnh Hào quang 3D (nhịp thở phát quang, luân xa sen xoay, bụi sáng, dấu chân sen)
+  auraCtrl?.update(dt, walkAmt, avatarPos)
+
   renderer.render(scene, camera)
 }
 
@@ -763,6 +779,10 @@ function startScene() {
   world = buildWorld(scene)
   const la = buildAvatar(0x5f6f82); avatar = la.group; legL = la.legL; legR = la.legR; scene.add(avatar)
 
+  // --- Phase 3: Khởi tạo Hào quang 3D theo cấp bậc công đức ---
+  auraCtrl = createAuraHalo(meritProfile.currentTier, meritProfile.showAura, scene)
+  avatar.add(auraCtrl.group)
+
   // --- Multiplayer: kết nối & phát vị trí của mình ---
   mp.connect(() => ({
     x: avatarPos.x, y: avatarPos.y, z: avatarPos.z, yaw: avatarYaw,
@@ -818,6 +838,7 @@ onBeforeUnmount(() => {
   if (sitTimer) clearInterval(sitTimer)
   cancelAnimationFrame(raf)
   window.removeEventListener('resize', onResize)
+  auraCtrl?.dispose()
   mp.disconnect()
   renderer?.dispose()
 })
@@ -846,7 +867,9 @@ defineExpose({
       playerCoords.z = z
       cam.yaw = 0
     }
-  }
+  },
+  toggleAura: () => meritSystem.toggleAura(),
+  setAuraTier: (tier: number, show?: boolean) => auraCtrl?.setTier(tier, show)
 })
 </script>
 

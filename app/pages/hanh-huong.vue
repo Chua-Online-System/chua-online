@@ -27,7 +27,8 @@ const {
   checkInModalOpen,
   openCheckInModal,
   closeCheckInModal,
-  canCheckInToday
+  canCheckInToday,
+  toggleAura
 } = useMeritSystem()
 
 const activePanel = ref<string>('')
@@ -267,6 +268,15 @@ async function doSignOut() { await signOut(); showGate.value = true }
         <span>{{ currentTierInfo.badge }}</span>
         <span class="font-serif font-bold text-amber-300">{{ profile.totalMerit }}</span>
         <span class="hidden md:inline text-xs text-amber-200/90 font-sans">Công đức</span>
+      </button>
+      <button
+        @click="toggleAura"
+        class="btn-hud"
+        :class="{ 'opacity-60': !profile.showAura }"
+        :title="profile.showAura ? 'Đang bật Hào quang 3D (Bấm để ẩn)' : 'Đang ẩn Hào quang 3D (Bấm để hiện)'"
+      >
+        <span>✨</span>
+        <span class="hidden lg:inline text-xs">{{ profile.showAura ? 'Hào quang' : 'Ẩn quang' }}</span>
       </button>
       <span class="divider">|</span>
       <span class="name">🙏 {{ current.name }}</span>
