@@ -21,6 +21,7 @@ export interface MeritProfile {
   lastPointsResetDate: string
   unlockedOutfits: string[]
   currentOutfit: string
+  activeAccessories: string[]
   showAura: boolean
   history: MeritLogItem[]
 }
@@ -232,6 +233,7 @@ const profile = reactive<MeritProfile>({
   lastPointsResetDate: '',
   unlockedOutfits: ['robe_lam'],
   currentOutfit: 'robe_lam',
+  activeAccessories: [],
   showAura: true,
   history: []
 })
@@ -239,6 +241,7 @@ const profile = reactive<MeritProfile>({
 const initialized = ref(false)
 export const activeMeritToast = ref<MeritToastData | null>(null)
 export const checkInModalOpen = ref(false)
+export const outfitShopModalOpen = ref(false)
 let toastTimer: any = null
 
 const levelUpModal = ref<{
@@ -262,6 +265,16 @@ export function useMeritSystem() {
       }
     } catch (e) {
       console.warn('[MeritSystem] Failed to parse local storage:', e)
+    }
+
+    if (!profile.unlockedOutfits || !profile.unlockedOutfits.length) {
+      profile.unlockedOutfits = ['robe_lam']
+    }
+    if (!profile.activeAccessories) {
+      profile.activeAccessories = []
+    }
+    if (!profile.currentOutfit) {
+      profile.currentOutfit = 'robe_lam'
     }
 
     // Kiểm tra reset trần điểm ngày mới
@@ -530,12 +543,40 @@ export function useMeritSystem() {
     return false
   }
 
+  function toggleAccessory(accId: string): boolean {
+    if (!profile.unlockedOutfits.includes(accId)) return false
+    if (!profile.activeAccessories) profile.activeAccessories = []
+    const idx = profile.activeAccessories.indexOf(accId)
+    if (idx >= 0) {
+      profile.activeAccessories.splice(idx, 1)
+    } else {
+      profile.activeAccessories.push(accId)
+    }
+    saveLocal()
+    syncWithCloud()
+    return true
+  }
+
   function unlockOutfit(outfitId: string, cost: number): boolean {
-    if (profile.unlockedOutfits.includes(outfitId)) return true
+    if (profile.unlockedOutfits.includes(outfitId)) {
+      if (outfitId.startsWith('acc_')) {
+        toggleAccessory(outfitId)
+      } else {
+        setOutfit(outfitId)
+      }
+      return true
+    }
     if (profile.currentMerit >= cost) {
       profile.currentMerit -= cost
       profile.unlockedOutfits.push(outfitId)
-      profile.currentOutfit = outfitId
+      if (outfitId.startsWith('acc_')) {
+        if (!profile.activeAccessories) profile.activeAccessories = []
+        if (!profile.activeAccessories.includes(outfitId)) {
+          profile.activeAccessories.push(outfitId)
+        }
+      } else {
+        profile.currentOutfit = outfitId
+      }
       saveLocal()
       syncWithCloud()
       return true
@@ -554,6 +595,14 @@ export function useMeritSystem() {
     checkInModalOpen.value = false
   }
 
+  function openOutfitShopModal() {
+    outfitShopModalOpen.value = true
+  }
+
+  function closeOutfitShopModal() {
+    outfitShopModalOpen.value = false
+  }
+
   return {
     profile,
     init,
@@ -563,6 +612,9 @@ export function useMeritSystem() {
     checkInModalOpen,
     openCheckInModal,
     closeCheckInModal,
+    outfitShopModalOpen,
+    openOutfitShopModal,
+    closeOutfitShopModal,
     currentTierInfo,
     dailyRemainingPoints,
     activeMeritToast,
@@ -571,6 +623,7 @@ export function useMeritSystem() {
     closeLevelUpModal,
     toggleAura,
     setOutfit,
+    toggleAccessory,
     unlockOutfit,
     calculateTier,
     getWeekStreakDays,

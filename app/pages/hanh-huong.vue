@@ -16,6 +16,7 @@ import MeritToast from '~/components/merit/MeritToast.vue'
 import MeritLevelUpModal from '~/components/merit/MeritLevelUpModal.vue'
 import MeritProfileModal from '~/components/merit/MeritProfileModal.vue'
 import CheckInModal from '~/components/merit/CheckInModal.vue'
+import OutfitShopModal from '~/components/merit/OutfitShopModal.vue'
 import { useMeritSystem } from '~/composables/useMeritSystem'
 
 const { current, cloudEnabled, init, enterAsGuest, signUp, signIn, signOut } = useAuth()
@@ -27,6 +28,9 @@ const {
   checkInModalOpen,
   openCheckInModal,
   closeCheckInModal,
+  outfitShopModalOpen,
+  openOutfitShopModal,
+  closeOutfitShopModal,
   canCheckInToday,
   toggleAura
 } = useMeritSystem()
@@ -83,6 +87,10 @@ function onInteract(action: string) {
   }
   if (action === 'modal_check_in' || action === 'check_in') {
     openCheckInModal()
+    return
+  }
+  if (action === 'modal_outfit_shop' || action === 'outfit_shop' || action === 'phap_y') {
+    openOutfitShopModal()
     return
   }
   if (action === 'modal_diem_danh' || action === 'diem-danh') {
@@ -264,6 +272,10 @@ async function doSignOut() { await signOut(); showGate.value = true }
         <span class="hidden sm:inline">Điểm danh</span>
         <span v-if="canCheckInToday()" class="w-2 h-2 rounded-full bg-amber-400 animate-ping ml-0.5" />
       </button>
+      <button @click="openOutfitShopModal" class="btn-hud btn-outfit" title="Pháp Y Các – Cửa Hàng Pháp Phục">
+        <span>👘</span>
+        <span class="hidden sm:inline">Pháp Y</span>
+      </button>
       <button @click="showMeritModal = true" class="btn-hud btn-merit" title="Sổ Công Đức Tu Học">
         <span>{{ currentTierInfo.badge }}</span>
         <span class="font-serif font-bold text-amber-300">{{ profile.totalMerit }}</span>
@@ -399,6 +411,26 @@ async function doSignOut() { await signOut(); showGate.value = true }
           </div>
         </div>
       </transition>
+
+      <!-- Modal Pháp Y Các (Phase 4) -->
+      <transition
+        enter-active-class="transition duration-300 ease-out"
+        enter-from-class="opacity-0"
+        enter-to-class="opacity-100"
+        leave-active-class="transition duration-200 ease-in"
+        leave-from-class="opacity-100"
+        leave-to-class="opacity-0"
+      >
+        <div
+          v-if="outfitShopModalOpen"
+          class="fixed inset-0 z-50 flex items-center justify-center bg-black/65 p-4 backdrop-blur-sm overflow-y-auto"
+          @click.self="closeOutfitShopModal"
+        >
+          <div class="w-full max-w-4xl my-auto animate-fade-up">
+            <OutfitShopModal @close="closeOutfitShopModal" />
+          </div>
+        </div>
+      </transition>
     </ClientOnly>
   </div>
 </template>
@@ -466,6 +498,15 @@ async function doSignOut() { await signOut(); showGate.value = true }
 }
 .btn-checkin:hover {
   background: linear-gradient(135deg, rgba(255, 179, 0, 0.38), rgba(217, 185, 105, 0.3));
+  border-color: #ffd54f;
+  box-shadow: 0 0 12px rgba(255, 213, 79, 0.35);
+}
+.btn-outfit {
+  background: linear-gradient(135deg, rgba(212, 153, 36, 0.22), rgba(140, 45, 25, 0.18));
+  border-color: rgba(230, 185, 92, 0.55);
+}
+.btn-outfit:hover {
+  background: linear-gradient(135deg, rgba(212, 153, 36, 0.4), rgba(140, 45, 25, 0.3));
   border-color: #ffd54f;
   box-shadow: 0 0 12px rgba(255, 213, 79, 0.35);
 }

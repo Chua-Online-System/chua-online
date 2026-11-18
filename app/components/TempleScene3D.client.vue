@@ -11,6 +11,7 @@ import { usePracticeJournal } from '~/composables/usePracticeJournal'
 import { useSpatialAudio } from '~/composables/useSpatialAudio'
 import { useMeritSystem } from '~/composables/useMeritSystem'
 import { createAuraHalo, type AuraController } from '~/three/auraHalo3D'
+import { buildCustomAvatar, type AvatarControllerResult } from '~/three/avatarOutfits'
 import MiniMapRadar from '~/components/navigation/MiniMapRadar.vue'
 
 const emit = defineEmits<{ (e: 'interact', action: string): void }>()
@@ -33,6 +34,17 @@ watch(
   ([newTier, show]) => {
     auraCtrl?.setTier(newTier, show)
   }
+)
+
+// --- Pháp phục & Phụ kiện 3D - Pháp Y Các (Phase 4) ---
+let localAvatar: AvatarControllerResult | null = null
+
+watch(
+  [() => meritProfile.currentOutfit, () => meritProfile.activeAccessories],
+  ([newOutfit, newAccessories]) => {
+    localAvatar?.setOutfit(newOutfit, newAccessories)
+  },
+  { deep: true }
 )
 
 function ensureAudioStarted() {
@@ -145,27 +157,8 @@ let fullPath: THREE.Vector3[] = []
 let climbT = 0
 let sandalPair: THREE.Group | null = null
 
-function buildAvatar(robeColor = 0x5f6f82) {
-  const g = new THREE.Group()
-  const robe = new THREE.MeshStandardMaterial({ color: robeColor, roughness: 0.85 })      // áo tràng
-  const robe2 = new THREE.MeshStandardMaterial({ color: new THREE.Color(robeColor).multiplyScalar(0.82), roughness: 0.85 })
-  const skin = new THREE.MeshStandardMaterial({ color: 0xe8c39e, roughness: 0.7 })
-  const sashM = new THREE.MeshStandardMaterial({ color: 0xd9b24a, roughness: 0.6, metalness: 0.2 })
-  const legM = new THREE.MeshStandardMaterial({ color: 0x3a3330, roughness: 1 })
-  const body = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.62, 1.5, 16), robe); body.position.y = 1.2; body.castShadow = true
-  const skirt = new THREE.Mesh(new THREE.ConeGeometry(0.66, 0.7, 16), robe2); skirt.position.y = 0.75
-  const shoulders = new THREE.Mesh(new THREE.SphereGeometry(0.44, 14, 12), robe); shoulders.scale.set(1, 0.55, 0.75); shoulders.position.y = 1.9
-  const sash = new THREE.Mesh(new THREE.BoxGeometry(0.55, 1.0, 0.06), sashM); sash.position.set(0, 1.45, 0.4)
-  const head = new THREE.Mesh(new THREE.SphereGeometry(0.31, 18, 16), skin); head.position.y = 2.32; head.scale.y = 1.08
-  const hair = new THREE.Mesh(new THREE.SphereGeometry(0.33, 18, 12, 0, Math.PI * 2, 0, Math.PI * 0.62), new THREE.MeshStandardMaterial({ color: 0x241f1b, roughness: 1 })); hair.position.y = 2.4
-  const hands = new THREE.Mesh(new THREE.SphereGeometry(0.17, 12, 10), skin); hands.scale.set(0.9, 1.3, 0.7); hands.position.set(0, 1.55, 0.42)
-  for (const s of [-1, 1]) {
-    const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.12, 0.8, 8), robe); arm.position.set(s * 0.28, 1.5, 0.28); arm.rotation.z = s * 0.4; arm.rotation.x = -0.9; g.add(arm)
-  }
-  const mkLeg = (sx: number) => { const p = new THREE.Group(); p.position.set(sx, 0.78, 0); const l = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.1, 0.78, 8), legM); l.position.y = -0.39; l.castShadow = true; p.add(l); return p }
-  const _legL = mkLeg(-0.17), _legR = mkLeg(0.17)
-  g.add(body, skirt, shoulders, sash, head, hair, hands, _legL, _legR)
-  return { group: g, legL: _legL, legR: _legR }
+function buildAvatar(outfitOrColor: string | number = 'robe_lam', accessories: string[] = []) {
+  return buildCustomAvatar(outfitOrColor, accessories)
 }
 
 // thẻ tên nổi trên đầu người chơi khác
@@ -777,7 +770,11 @@ function startScene() {
   scene.add(new THREE.AmbientLight(0xffffff, 0.42))
 
   world = buildWorld(scene)
-  const la = buildAvatar(0x5f6f82); avatar = la.group; legL = la.legL; legR = la.legR; scene.add(avatar)
+  localAvatar = buildCustomAvatar(meritProfile.currentOutfit, meritProfile.activeAccessories)
+  avatar = localAvatar.group
+  legL = localAvatar.legL
+  legR = localAvatar.legR
+  scene.add(avatar)
 
   // --- Phase 3: Khởi tạo Hào quang 3D theo cấp bậc công đức ---
   auraCtrl = createAuraHalo(meritProfile.currentTier, meritProfile.showAura, scene)
@@ -869,7 +866,10 @@ defineExpose({
     }
   },
   toggleAura: () => meritSystem.toggleAura(),
-  setAuraTier: (tier: number, show?: boolean) => auraCtrl?.setTier(tier, show)
+  setAuraTier: (tier: number, show?: boolean) => auraCtrl?.setTier(tier, show),
+  setAvatarOutfit: (outfitId: string | number, accessories?: string[]) => {
+    localAvatar?.setOutfit(outfitId, accessories)
+  }
 })
 </script>
 

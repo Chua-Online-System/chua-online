@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { useMeritSystem, MERIT_TIERS } from '~/composables/useMeritSystem'
 import { useAuth } from '~/composables/useAuth'
+import { getOutfitById } from '~/three/avatarOutfits'
 
 const emit = defineEmits<{ (e: 'close'): void }>()
 
@@ -12,6 +13,7 @@ const {
   canCheckInToday,
   performCheckIn,
   openCheckInModal,
+  openOutfitShopModal,
   toggleAura,
   MAX_DAILY_REGULAR_POINTS
 } = useMeritSystem()
@@ -34,9 +36,19 @@ const dailyProgressPercent = computed(() => {
   return Math.min(100, Math.round((profile.todayPoints / MAX_DAILY_REGULAR_POINTS) * 100))
 })
 
+const currentOutfitDef = computed(() => getOutfitById(profile.currentOutfit))
+const activeAccessoriesDefs = computed(() => {
+  return (profile.activeAccessories || []).map((id) => getOutfitById(id)).filter(Boolean)
+})
+
 function onCheckIn() {
   emit('close')
   openCheckInModal()
+}
+
+function onOpenOutfitShop() {
+  emit('close')
+  openOutfitShopModal()
 }
 
 function formatDate(ts: number) {
@@ -222,7 +234,64 @@ function formatDate(ts: number) {
         </div>
       </div>
 
-      <!-- 3. NHẬT KÝ HOẠT ĐỘNG THIỆN LÀNH GẦN ĐÂY -->
+      <!-- 3. PHÁP PHỤC & PHỤ KIỆN THIỀN MÔN (PHÁP Y CÁC - PHASE 4) -->
+      <div class="p-4 rounded-2xl bg-black/35 border border-[#e6b95c]/25">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2">
+            <span class="text-base">👘</span>
+            <h3 class="font-serif font-bold text-sm text-[#ffe082]">
+              Pháp Y Các – Trang Phục & Phụ Kiện
+            </h3>
+          </div>
+          <button
+            @click="onOpenOutfitShop"
+            class="px-3 py-1 rounded-full text-xs font-serif font-semibold bg-gradient-to-r from-[#d9b969] to-[#b4863f] text-[#2a1708] hover:brightness-110 active:scale-95 transition-all shadow-md flex items-center gap-1.5"
+          >
+            <span>✨</span>
+            <span>Vào Pháp Y Các</span>
+          </button>
+        </div>
+
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3 rounded-xl bg-white/5 border border-white/5">
+          <!-- Áo đang mặc -->
+          <div class="flex items-center gap-3">
+            <div
+              class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl border border-white/20 shrink-0"
+              :style="{ backgroundColor: (currentOutfitDef?.colorHex || '#5f6f82') + '33' }"
+            >
+              {{ currentOutfitDef?.badge || '👘' }}
+            </div>
+            <div>
+              <div class="text-[11px] text-[#cfbcaa]">Đang khoác trên người:</div>
+              <div class="font-serif font-bold text-sm text-amber-200">
+                {{ currentOutfitDef?.name || 'Áo Lam Cư Sĩ' }}
+              </div>
+              <div class="text-[10px] text-[#a89582] italic">
+                {{ currentOutfitDef?.tagline }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Phụ kiện đang đeo -->
+          <div class="flex items-center gap-2 self-stretch sm:self-auto justify-end flex-wrap">
+            <template v-if="activeAccessoriesDefs.length">
+              <span
+                v-for="acc in activeAccessoriesDefs"
+                :key="acc.id"
+                class="px-2.5 py-1 rounded-lg text-xs bg-amber-500/15 border border-amber-400/30 text-amber-200 flex items-center gap-1"
+              >
+                <span>{{ acc.badge }}</span>
+                <span>{{ acc.name }}</span>
+              </span>
+            </template>
+            <span v-else class="text-xs text-[#8c7d6e] italic">
+              Chưa đeo phụ kiện nào
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. NHẬT KÝ HOẠT ĐỘNG THIỆN LÀNH GẦN ĐÂY -->
       <div class="p-4 rounded-2xl bg-black/35 border border-[#e6b95c]/25">
         <h3 class="font-serif font-bold text-sm text-[#ffe082] mb-3 flex items-center gap-2">
           <span>📜</span>

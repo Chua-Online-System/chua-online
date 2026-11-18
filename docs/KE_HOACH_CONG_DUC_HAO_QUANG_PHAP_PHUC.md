@@ -196,17 +196,19 @@ Người chơi dùng điểm công đức tích lũy để quy đổi (mở khó
 
 ### PHASE 4: PHÁP Y CÁC – QUY ĐỔI & THAY ĐỔI TRANG PHỤC 3D
 > **Mục tiêu:** Tạo giao diện cửa hàng pháp phục và nâng cấp mô hình nhân vật 3D cho phép thay đổi y phục tức thì.
+> **Trạng thái:** ✅ **ĐÃ HOÀN THÀNH TOÀN BỘ (100%)**
 
-- [ ] **Task 4.1: Nâng cấp hàm `buildAvatar` trong `TempleScene3D.client.vue`:**
-  - Mở rộng tham số nhận `outfitId` (`robe_lam`, `robe_nau`, `robe_chivang`, `robe_bach_y`, `robe_ca_sa`).
-  - Đổi màu sắc vải vóc, thêm dải áo cà sa khoác chéo vai, thêm chuỗi hạt bồ đề 108 hạt quấn cổ.
-  - Hàm `setAvatarOutfit(outfitId)` giúp thay đổi trang phục ngay lập tức mà không cần tải lại toàn bộ thế giới 3D.
-- [ ] **Task 4.2: Thiết kế Modal "Pháp Y Các" (`OutfitShopModal.vue`):**
-  - Giao diện phòng thử đồ pháp phục thiền môn.
-  - Khung xem trước (Preview) hình ảnh bộ áo, thông tin ý nghĩa tâm linh và số điểm công đức cần quy đổi.
-  - Nút *"Quy Đổi"* (nếu chưa sở hữu) hoặc *"Mặc Lên"* (nếu đã sở hữu).
-- [ ] **Task 4.3: Lưu trữ trang phục đã chọn:**
-  - Lưu vào hồ sơ người dùng (`localStorage` + Supabase `user_profiles`), khi vào lại game avatar tự động khoác đúng bộ pháp phục đã chọn.
+- [x] **Task 4.1: Nâng cấp hàm `buildAvatar` trong `TempleScene3D.client.vue`:**
+  - Mở rộng tham số nhận `outfitId` (`robe_lam`, `robe_nau`, `robe_chivang`, `robe_bach_y`, `robe_ca_sa`) và phụ kiện (`acc_trang_hat`, `acc_non_la`).
+  - Đổi màu sắc vải vóc, thêm dải áo cà sa vàng hổ phách khoác chéo vai kèm chốt cài pháp luân kim bảo, thêm chuỗi tràng hạt bồ đề 108 hạt rủ tua đỏ trước ngực, thêm nón lá nứa trúc thanh tao.
+  - Hàm `setAvatarOutfit(outfitId, accessories)` cập nhật mô hình trực tiếp, mượt mà không reload thế giới 3D.
+- [x] **Task 4.2: Thiết kế Modal "Pháp Y Các" (`OutfitShopModal.vue`):**
+  - Giao diện phòng thử đồ pháp phục thiền môn cổ kính trang nhã với bộ lọc tab (Tất cả / Pháp phục / Phụ kiện).
+  - Khung xem trước (Preview) màu sắc, ý nghĩa tâm linh đạo Phật và chi tiết tạo hình 3D.
+  - Nút *"Quy Đổi"* (kèm âm thanh chuông bát nhã) hoặc *"Khoác Áo"* / *"Đeo Phụ Kiện"*.
+- [x] **Task 4.3: Lưu trữ trang phục đã chọn:**
+  - Lưu trữ bền vững vào `localStorage` và Supabase (`unlocked_outfits`, `current_outfit`, `active_accessories`).
+  - Tự động tải lại trang phục và phụ kiện đã lưu khi vào chùa; thêm nút HUD `👘 Pháp Y` trên thanh điều hướng và liên kết trong Sổ Công Đức.
 
 ---
 
