@@ -75,7 +75,7 @@ export const MERIT_TIERS: TierInfo[] = [
     description: 'Đoạn trừ phiền não, luân xa đài sen 12 cánh xoay 3D quang minh soi rạng bước chân.',
     minPoints: 700,
     nextPoints: 1500,
-    badge: '🪷',
+    badge: '🌸',
     color: '#4fc3f7'
   },
   {

@@ -17,7 +17,7 @@ const haloDetails: Record<number, { title: string; desc: string; icon: string }>
   4: {
     title: 'Luân Xa Đài Sen Quang Minh 12 Cánh (Lotus Lightwheel)',
     desc: 'Đài sen 12 cánh xoay chậm 3D sau đầu, kèm vầng hào quang soi rạng mặt đất dưới chân mỗi bước đi.',
-    icon: '🪷'
+    icon: '🌸'
   },
   5: {
     title: 'Hào Quang Thất Sắc Quang Minh (Celestial Rainbow Aura)',

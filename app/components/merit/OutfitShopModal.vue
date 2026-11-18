@@ -224,21 +224,29 @@ function handleAction() {
       </div>
 
       <!-- Cột Phải: Khung Xem Trước Chi Tiết (5 cột trên desktop) -->
-      <div class="md:col-span-5 flex flex-col justify-between p-4 rounded-2xl bg-black/45 border border-[#e6b95c]/30 shadow-inner">
-        <div>
-          <!-- Vòng hào quang đại diện -->
-          <div class="relative flex items-center justify-center my-3">
+      <div class="md:col-span-5 flex flex-col justify-between p-3.5 rounded-2xl bg-black/45 border border-[#e6b95c]/30 shadow-inner overflow-hidden">
+        <div class="overflow-y-auto pr-1 flex-1">
+          <!-- Vòng hào quang đại diện & tông màu pháp phục -->
+          <div class="relative flex flex-col items-center justify-center my-2">
             <div
-              class="w-24 h-24 rounded-full flex items-center justify-center text-5xl shadow-[0_0_30px_rgba(255,213,79,0.35)] border-2 border-amber-300/40"
+              class="w-20 h-20 rounded-full flex items-center justify-center text-4xl shadow-[0_0_25px_rgba(255,213,79,0.3)] border-2 border-amber-300/40 relative"
               :style="{ backgroundColor: selectedItem.colorHex + '33' }"
             >
               {{ selectedItem.badge }}
             </div>
+
+            <!-- Tông màu nhận diện -->
+            <div class="mt-2 flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-[10px]">
+              <span class="w-2.5 h-2.5 rounded-full border border-white/40" :style="{ backgroundColor: selectedItem.colorHex }" />
+              <span class="text-[#cfbcaa] font-serif">
+                {{ selectedItem.type === 'robe' ? 'Tông sắc Y Phục' : 'Chất liệu Phụ Kiện' }}
+              </span>
+            </div>
           </div>
 
           <!-- Tên & Tagline -->
-          <div class="text-center mb-3">
-            <h3 class="font-serif text-lg font-bold text-amber-300">
+          <div class="text-center mb-2">
+            <h3 class="font-serif text-base sm:text-lg font-bold text-amber-300">
               {{ selectedItem.name }}
             </h3>
             <p class="text-xs text-[#ddcbba] italic mt-0.5">
@@ -247,34 +255,34 @@ function handleAction() {
           </div>
 
           <!-- Ý Nghĩa Tâm Linh -->
-          <div class="p-3 rounded-xl bg-white/5 border border-white/10 mb-3 text-xs leading-relaxed text-[#f0e4d5]">
-            <div class="font-serif font-semibold text-amber-200 mb-1 flex items-center gap-1.5">
+          <div class="p-2.5 rounded-xl bg-white/5 border border-white/10 mb-2 text-xs leading-relaxed text-[#f0e4d5]">
+            <div class="font-serif font-semibold text-amber-200 mb-0.5 flex items-center gap-1.5">
               <span>🌸</span>
               <span>Ý Nghĩa Thiền Môn:</span>
             </div>
-            <p class="italic text-[#d9c8b7]">
+            <p class="italic text-[#d9c8b7] text-[11px] leading-snug">
               {{ selectedItem.spiritualMeaning }}
             </p>
           </div>
 
           <!-- Điểm Đặc Trưng Pháp Phục -->
-          <div class="space-y-1.5 mb-4">
-            <div class="text-[11px] font-semibold text-[#bcaaa0] uppercase tracking-wider">
+          <div class="space-y-1 mb-2">
+            <div class="text-[10px] font-semibold text-[#bcaaa0] uppercase tracking-wider">
               Chi Tiết Tạo Hình 3D:
             </div>
             <div
               v-for="(f, idx) in selectedItem.features"
               :key="idx"
-              class="flex items-center gap-2 text-xs text-[#cfbcaa]"
+              class="flex items-center gap-1.5 text-[11px] text-[#cfbcaa]"
             >
-              <span class="text-amber-400 text-xs">✦</span>
+              <span class="text-amber-400 text-xs shrink-0">✦</span>
               <span>{{ f }}</span>
             </div>
           </div>
         </div>
 
-        <!-- Khung Hành Động Nút Bấm -->
-        <div class="pt-3 border-t border-white/10">
+        <!-- Khung Hành Động Nút Bấm: Luôn cố định chân đế, không bị trôi -->
+        <div class="pt-2.5 border-t border-white/10 shrink-0 mt-2">
           <!-- Trường hợp CHƯA SỞ HỮU -->
           <template v-if="!isUnlocked(selectedItem)">
             <button

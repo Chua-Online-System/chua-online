@@ -41,6 +41,14 @@ function getTierBadge(tierNumber: number): string {
   return t ? `${t.badge} ${t.title}` : '🌿 Sơ Tâm'
 }
 
+function getTierIcon(tierNumber: number): string {
+  if (tierNumber >= 5) return '🌌'
+  if (tierNumber >= 4) return '🌸'
+  if (tierNumber >= 3) return '🌟'
+  if (tierNumber >= 2) return '✨'
+  return '🌿'
+}
+
 function getRobeBadge(outfitId: string): string {
   const def = getOutfitById(outfitId)
   return def ? `${def.badge} ${def.name}` : '👘 Áo Lam'
@@ -102,7 +110,7 @@ function getRobeBadge(outfitId: string): string {
             : 'bg-white/5 border-white/10 text-[#d8c7b5] hover:bg-white/10'
         "
       >
-        <span>🪷</span>
+        <span>🌸</span>
         <span>Tấm Lòng Vàng Tu Bổ Chùa</span>
       </button>
     </div>
@@ -118,18 +126,19 @@ function getRobeBadge(outfitId: string): string {
 
         <template v-else>
           <!-- PODIUM TOP 3 (1ST, 2ND, 3RD) -->
-          <div v-if="top3.length" class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+          <div v-if="top3.length" class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-7 pb-2">
             <!-- Hạng 2 (Bạc) -->
             <div
               v-if="top3[1]"
               class="order-2 sm:order-1 p-3.5 rounded-2xl bg-gradient-to-b from-[#2e2b29] to-[#1c1a19] border border-gray-400/40 flex flex-col items-center text-center relative shadow-lg"
               :class="{ 'ring-2 ring-amber-400': top3[1].isCurrentUser }"
             >
-              <div class="absolute -top-3.5 px-3 py-0.5 rounded-full bg-slate-300 text-slate-900 font-serif font-bold text-xs shadow">
-                🥈 Hạng Nhì
+              <div class="absolute -top-3.5 px-3.5 py-1 rounded-full bg-gradient-to-r from-slate-200 via-slate-100 to-slate-300 text-slate-900 font-serif font-bold text-xs shadow-md uppercase tracking-wider flex items-center gap-1.5 border border-white">
+                <span class="w-4 h-4 rounded-full bg-slate-500 text-white flex items-center justify-center text-[10px] font-bold">2</span>
+                <span>Á Quân (Hạng 2)</span>
               </div>
               <div class="w-14 h-14 rounded-full bg-slate-400/20 border-2 border-slate-300 flex items-center justify-center text-2xl my-2 shadow-[0_0_15px_rgba(203,213,225,0.4)]">
-                {{ top3[1].tier >= 5 ? '🌌' : top3[1].tier >= 4 ? '🪷' : '✨' }}
+                {{ getTierIcon(top3[1].tier) }}
               </div>
               <h4 class="font-serif font-bold text-sm text-slate-100 flex items-center gap-1">
                 <span>{{ top3[1].dharmaName }}</span>
@@ -150,14 +159,17 @@ function getRobeBadge(outfitId: string): string {
             <!-- Hạng 1 (Vàng - Trung Tâm) -->
             <div
               v-if="top3[0]"
-              class="order-1 sm:order-2 p-4 rounded-2xl bg-gradient-to-b from-[#4a3416] via-[#2a1c0d] to-[#1c1208] border-2 border-[#ffd54f]/70 flex flex-col items-center text-center relative shadow-2xl scale-100 sm:scale-105 z-10"
+              class="order-1 sm:order-2 p-4 rounded-2xl bg-gradient-to-b from-[#4a3416] via-[#2a1c0d] to-[#1c1208] border-2 border-[#ffd54f]/70 flex flex-col items-center text-center relative shadow-2xl sm:-mt-1 z-10"
               :class="{ 'ring-2 ring-amber-300': top3[0].isCurrentUser }"
             >
-              <div class="absolute -top-4 px-3.5 py-0.5 rounded-full bg-gradient-to-r from-[#ffe082] to-[#ffd54f] text-[#2a1708] font-serif font-bold text-xs shadow-md">
-                👑 Quán Quân
+              <div class="absolute -top-4 px-4 py-1 rounded-full bg-gradient-to-r from-[#ffe082] via-[#ffd54f] to-[#ffb300] text-[#2a1708] font-serif font-extrabold text-xs shadow-lg uppercase tracking-wider flex items-center gap-1.5 border border-amber-200">
+                <svg class="w-3.5 h-3.5 fill-[#2a1708]" viewBox="0 0 24 24">
+                  <path d="M12 2l2.4 4.8 5.3.8-3.8 3.7.9 5.3-4.8-2.5-4.8 2.5.9-5.3-3.8-3.7 5.3-.8L12 2z"/>
+                </svg>
+                <span>★ Quán Quân ★</span>
               </div>
               <div class="w-16 h-16 rounded-full bg-[#ffd54f]/25 border-2 border-[#ffd54f] flex items-center justify-center text-3xl my-2 shadow-[0_0_25px_rgba(255,213,79,0.7)] animate-pulse">
-                {{ top3[0].tier >= 5 ? '🌌' : '🪷' }}
+                {{ getTierIcon(top3[0].tier) }}
               </div>
               <h4 class="font-serif font-bold text-base text-[#fff9c4] flex items-center gap-1">
                 <span>{{ top3[0].dharmaName }}</span>
@@ -181,11 +193,12 @@ function getRobeBadge(outfitId: string): string {
               class="order-3 p-3.5 rounded-2xl bg-gradient-to-b from-[#332219] to-[#1c130d] border border-amber-700/50 flex flex-col items-center text-center relative shadow-lg"
               :class="{ 'ring-2 ring-amber-400': top3[2].isCurrentUser }"
             >
-              <div class="absolute -top-3.5 px-3 py-0.5 rounded-full bg-[#cd7f32] text-amber-950 font-serif font-bold text-xs shadow">
-                🥉 Hạng Ba
+              <div class="absolute -top-3.5 px-3.5 py-1 rounded-full bg-gradient-to-r from-[#d97736] via-[#cd7f32] to-[#b35e20] text-amber-50 font-serif font-bold text-xs shadow-md uppercase tracking-wider flex items-center gap-1.5 border border-amber-400/50">
+                <span class="w-4 h-4 rounded-full bg-amber-900/60 text-amber-200 flex items-center justify-center text-[10px] font-bold">3</span>
+                <span>Quý Quân (Hạng 3)</span>
               </div>
               <div class="w-14 h-14 rounded-full bg-amber-700/25 border-2 border-[#cd7f32] flex items-center justify-center text-2xl my-2 shadow-[0_0_15px_rgba(205,127,50,0.4)]">
-                {{ top3[2].tier >= 5 ? '🌌' : top3[2].tier >= 4 ? '🪷' : '🌟' }}
+                {{ getTierIcon(top3[2].tier) }}
               </div>
               <h4 class="font-serif font-bold text-sm text-amber-100 flex items-center gap-1">
                 <span>{{ top3[2].dharmaName }}</span>
@@ -273,7 +286,7 @@ function getRobeBadge(outfitId: string): string {
       <div v-else class="space-y-3">
         <div class="p-4 rounded-2xl bg-black/40 border border-[#e6b95c]/25 text-xs text-[#d8c7b5] leading-relaxed">
           <p class="font-serif font-bold text-sm text-amber-300 mb-1 flex items-center gap-1.5">
-            <span>🪷</span>
+            <span>🌸</span>
             <span>Tri Ân Tấm Lòng Vàng Hộ Trì Thiền Môn:</span>
           </p>
           Mỗi lời cầu an, mỗi ngọn hoa đăng, nhát chuông hay dải lụa nguyện ước đều là công đức vô lượng trợ duyên cho ngôi chùa thêm phần trang nghiêm, thanh tịnh.

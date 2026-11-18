@@ -100,7 +100,7 @@ function handleClose() {
       <!-- 1. CÂU KINH PHẬT KHAI TÂM ĐẦU NGÀY -->
       <div class="p-4 rounded-2xl bg-black/40 border border-[#e6b95c]/30 relative overflow-hidden">
         <div class="absolute -right-4 -bottom-4 text-7xl opacity-5 pointer-events-none font-serif text-[#ffd54f]">
-          🪷
+          🌸
         </div>
         <div class="flex items-start gap-3">
           <span class="text-xl text-[#ffd54f] shrink-0 mt-0.5">❝</span>
@@ -120,7 +120,7 @@ function handleClose() {
       <div>
         <div class="flex items-center justify-between mb-3">
           <h3 class="font-serif font-bold text-sm text-[#ffe082] flex items-center gap-1.5">
-            <span>🪷</span>
+            <span>🌸</span>
             <span>Hành Trình Tinh Tấn 7 Ngày</span>
           </h3>
           <span class="text-[11px] text-[#c7b5a2]">
@@ -156,9 +156,9 @@ function handleClose() {
 
             <!-- Biểu tượng hoa sen trạng thái -->
             <div class="my-2 text-2xl transition-transform" :class="{ 'scale-110 animate-bounce': d.status === 'today' }">
-              <span v-if="d.status === 'completed'">🪷</span>
+              <span v-if="d.status === 'completed'">🌸</span>
               <span v-else-if="d.status === 'today'">✨</span>
-              <span v-else class="grayscale opacity-50">🪷</span>
+              <span v-else class="grayscale opacity-50">🌸</span>
             </div>
 
             <!-- Số điểm nhận được -->
@@ -203,7 +203,7 @@ function handleClose() {
             class="p-2.5 rounded-xl border flex flex-col items-center justify-center transition-all"
             :class="profile.streakDays >= 3 ? 'bg-amber-500/15 border-amber-400 text-[#fef5e7]' : 'bg-white/5 border-white/10 text-white/40'"
           >
-            <span class="text-lg">🥉</span>
+            <span class="text-lg">🌱</span>
             <span class="font-serif font-bold text-xs mt-0.5">Chuỗi 3 Ngày</span>
             <span class="text-amber-300 font-bold text-[11px]">+10 Công Đức</span>
             <span class="text-[9px] mt-1" :class="profile.streakDays >= 3 ? 'text-green-400' : 'text-stone-500'">
@@ -215,7 +215,7 @@ function handleClose() {
             class="p-2.5 rounded-xl border flex flex-col items-center justify-center transition-all"
             :class="profile.streakDays >= 7 ? 'bg-amber-500/15 border-amber-400 text-[#fef5e7]' : 'bg-white/5 border-white/10 text-white/40'"
           >
-            <span class="text-lg">🥈</span>
+            <span class="text-lg">✨</span>
             <span class="font-serif font-bold text-xs mt-0.5">Chuỗi 7 Ngày</span>
             <span class="text-amber-300 font-bold text-[11px]">+30 Công Đức</span>
             <span class="text-[9px] mt-1" :class="profile.streakDays >= 7 ? 'text-green-400' : 'text-stone-500'">
@@ -227,7 +227,7 @@ function handleClose() {
             class="p-2.5 rounded-xl border flex flex-col items-center justify-center transition-all"
             :class="profile.streakDays >= 14 ? 'bg-amber-500/15 border-amber-400 text-[#fef5e7]' : 'bg-white/5 border-white/10 text-white/40'"
           >
-            <span class="text-lg">🥇</span>
+            <span class="text-lg">🌟</span>
             <span class="font-serif font-bold text-xs mt-0.5">Chuỗi 14 Ngày</span>
             <span class="text-amber-300 font-bold text-[11px]">+60 Công Đức</span>
             <span class="text-[9px] mt-1" :class="profile.streakDays >= 14 ? 'text-green-400' : 'text-stone-500'">

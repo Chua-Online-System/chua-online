@@ -29,7 +29,7 @@ const { activeMeritToast, dismissMeritToast } = useMeritSystem()
       >
         <!-- Icon phát sáng -->
         <div class="relative flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-[#ffd54f]/25 to-[#c9a356]/15 border border-[#ffd54f]/40 text-xl shrink-0 shadow-inner">
-          <span>{{ activeMeritToast.badge || '🪷' }}</span>
+          <span>{{ activeMeritToast.badge || '🌸' }}</span>
           <span
             v-if="activeMeritToast.amount > 0"
             class="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-amber-400 animate-ping opacity-75"
