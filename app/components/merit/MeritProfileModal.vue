@@ -14,6 +14,7 @@ const {
   performCheckIn,
   openCheckInModal,
   openOutfitShopModal,
+  openLeaderboardModal,
   toggleAura,
   MAX_DAILY_REGULAR_POINTS
 } = useMeritSystem()
@@ -49,6 +50,11 @@ function onCheckIn() {
 function onOpenOutfitShop() {
   emit('close')
   openOutfitShopModal()
+}
+
+function onOpenLeaderboard() {
+  emit('close')
+  openLeaderboardModal()
 }
 
 function formatDate(ts: number) {
@@ -87,13 +93,24 @@ function formatDate(ts: number) {
         </div>
       </div>
 
-      <button
-        class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-[#ebd7be] flex items-center justify-center transition-colors"
-        title="Đóng"
-        @click="emit('close')"
-      >
-        ✕
-      </button>
+      <div class="flex items-center gap-2">
+        <button
+          @click="onOpenLeaderboard"
+          class="px-3 py-1 rounded-full text-xs font-serif font-semibold bg-gradient-to-r from-[#ffd54f]/20 to-[#ff9800]/20 border border-amber-400/40 text-amber-200 hover:brightness-110 active:scale-95 transition-all flex items-center gap-1.5"
+          title="Bảng Vàng Công Đức"
+        >
+          <span>🏆</span>
+          <span class="hidden sm:inline">Bảng Vàng</span>
+        </button>
+
+        <button
+          class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-[#ebd7be] flex items-center justify-center transition-colors"
+          title="Đóng"
+          @click="emit('close')"
+        >
+          ✕
+        </button>
+      </div>
     </div>
 
     <!-- Body cuộn được -->

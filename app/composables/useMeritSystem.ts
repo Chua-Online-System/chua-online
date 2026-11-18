@@ -90,6 +90,51 @@ export const MERIT_TIERS: TierInfo[] = [
   }
 ]
 
+export interface LeaderboardEntry {
+  id: string
+  dharmaName: string
+  totalMerit: number
+  tier: 1 | 2 | 3 | 4 | 5
+  streakDays: number
+  outfitId: string
+  isCurrentUser?: boolean
+  rank?: number
+}
+
+export interface TempleContribution {
+  id: string
+  donorName: string
+  purpose: string
+  amountMerit: number
+  date: string
+  badge: string
+}
+
+export const COMMUNITY_LEADERBOARD_SEED: LeaderboardEntry[] = [
+  { id: 'lb_1', dharmaName: 'Thích Tuệ Đăng', totalMerit: 3240, tier: 5, streakDays: 108, outfitId: 'robe_ca_sa' },
+  { id: 'lb_2', dharmaName: 'Diệu Thiện Tâm', totalMerit: 2680, tier: 5, streakDays: 84, outfitId: 'robe_bach_y' },
+  { id: 'lb_3', dharmaName: 'Quang Giác Cư Sĩ', totalMerit: 2150, tier: 5, streakDays: 72, outfitId: 'robe_ca_sa' },
+  { id: 'lb_4', dharmaName: 'Thích Nhuận Tâm', totalMerit: 1480, tier: 4, streakDays: 49, outfitId: 'robe_chivang' },
+  { id: 'lb_5', dharmaName: 'Liên Hoa Tịnh Xá', totalMerit: 1220, tier: 4, streakDays: 42, outfitId: 'robe_bach_y' },
+  { id: 'lb_6', dharmaName: 'Minh Trí Cư Sĩ', totalMerit: 980, tier: 4, streakDays: 35, outfitId: 'robe_chivang' },
+  { id: 'lb_7', dharmaName: 'Tuệ Tâm An', totalMerit: 640, tier: 3, streakDays: 21, outfitId: 'robe_nau' },
+  { id: 'lb_8', dharmaName: 'Viên Chiếu Thiền Sinh', totalMerit: 510, tier: 3, streakDays: 18, outfitId: 'robe_nau' },
+  { id: 'lb_9', dharmaName: 'Thiện Duyên Phật Tử', totalMerit: 430, tier: 3, streakDays: 14, outfitId: 'robe_nau' },
+  { id: 'lb_10', dharmaName: 'Bồ Đề Tâm', totalMerit: 280, tier: 2, streakDays: 9, outfitId: 'robe_lam' },
+  { id: 'lb_11', dharmaName: 'Tịnh Tấn Cư Sĩ', totalMerit: 220, tier: 2, streakDays: 7, outfitId: 'robe_lam' },
+  { id: 'lb_12', dharmaName: 'Sơ Tâm Học Phật', totalMerit: 140, tier: 2, streakDays: 5, outfitId: 'robe_lam' }
+]
+
+export const TEMPLE_CONTRIBUTIONS_SEED: TempleContribution[] = [
+  { id: 'c_1', donorName: 'Thích Tuệ Đăng', purpose: 'Đúc Đại Hồng Chung Hòa Bình', amountMerit: 500, date: '15/11/2026', badge: '🔔' },
+  { id: 'c_2', donorName: 'Diệu Thiện Tâm', purpose: 'Chăm Sóc & Tưới Nước Cội Bồ Đề Cổ Thụ', amountMerit: 350, date: '16/11/2026', badge: '🌳' },
+  { id: 'c_3', donorName: 'Quang Giác Cư Sĩ', purpose: 'Phóng Sinh Đàn Cá Koi Hồ Sen', amountMerit: 300, date: '16/11/2026', badge: '🐟' },
+  { id: 'c_4', donorName: 'Minh Trí Cư Sĩ', purpose: 'Tu Bổ Cầu Đá Vòm & Lát Thềm Ngũ Cấp', amountMerit: 250, date: '17/11/2026', badge: '🌉' },
+  { id: 'c_5', donorName: 'Liên Hoa Tịnh Xá', purpose: 'Thắp Sáng Đèn Hoa Đăng Cầu An Sông Trăng', amountMerit: 200, date: '17/11/2026', badge: '🏮' },
+  { id: 'c_6', donorName: 'Thích Nhuận Tâm', purpose: 'Ấn Tống Kinh Sách & Pháp Bảo Thiền Môn', amountMerit: 200, date: '18/11/2026', badge: '📜' },
+  { id: 'c_7', donorName: 'Tuệ Tâm An', purpose: 'Cúng Dường Hương Trầm & Đèn Dầu Tam Bảo', amountMerit: 150, date: '18/11/2026', badge: '🪔' }
+]
+
 const STORAGE_KEY = 'dco_merit_profile_v1'
 const MAX_DAILY_REGULAR_POINTS = 120
 
@@ -242,6 +287,7 @@ const initialized = ref(false)
 export const activeMeritToast = ref<MeritToastData | null>(null)
 export const checkInModalOpen = ref(false)
 export const outfitShopModalOpen = ref(false)
+export const leaderboardModalOpen = ref(false)
 let toastTimer: any = null
 
 const levelUpModal = ref<{
@@ -603,6 +649,83 @@ export function useMeritSystem() {
     outfitShopModalOpen.value = false
   }
 
+  function openLeaderboardModal() {
+    leaderboardModalOpen.value = true
+  }
+
+  function closeLeaderboardModal() {
+    leaderboardModalOpen.value = false
+  }
+
+  async function getLeaderboard(): Promise<LeaderboardEntry[]> {
+    const list: LeaderboardEntry[] = []
+
+    // 1. Thử lấy từ Supabase nếu có kết nối
+    if (isConfigured && client) {
+      try {
+        const { data } = await client
+          .from('user_merit_profiles')
+          .select('user_id, dharma_name, total_merit, tier, streak_days, current_outfit')
+          .order('total_merit', { ascending: false })
+          .limit(25)
+
+        if (data && data.length) {
+          data.forEach((row: any) => {
+            list.push({
+              id: row.user_id,
+              dharmaName: row.dharma_name || 'Phật tử tinh tấn',
+              totalMerit: row.total_merit || 0,
+              tier: (row.tier || 1) as any,
+              streakDays: row.streak_days || 0,
+              outfitId: row.current_outfit || 'robe_lam'
+            })
+          })
+        }
+      } catch (e) {
+        console.warn('[Leaderboard] Cloud notice:', e)
+      }
+    }
+
+    // 2. Bổ sung từ seed cộng đồng nếu danh sách chưa đủ dài
+    if (list.length < 5) {
+      for (const item of COMMUNITY_LEADERBOARD_SEED) {
+        if (!list.some((x) => x.dharmaName === item.dharmaName)) {
+          list.push({ ...item })
+        }
+      }
+    }
+
+    // 3. Đưa người chơi hiện tại vào bảng xếp hạng
+    const myName = authUser.value?.name || 'Bạn (Tôi)'
+    const myId = authUser.value?.id || 'current_user'
+    const existingIdx = list.findIndex((x) => x.id === myId || x.dharmaName === myName)
+    if (existingIdx >= 0) {
+      list[existingIdx].totalMerit = Math.max(list[existingIdx].totalMerit, profile.totalMerit)
+      list[existingIdx].streakDays = Math.max(list[existingIdx].streakDays, profile.streakDays)
+      list[existingIdx].tier = profile.currentTier
+      list[existingIdx].outfitId = profile.currentOutfit
+      list[existingIdx].isCurrentUser = true
+    } else {
+      list.push({
+        id: myId,
+        dharmaName: myName,
+        totalMerit: profile.totalMerit,
+        tier: profile.currentTier,
+        streakDays: profile.streakDays,
+        outfitId: profile.currentOutfit,
+        isCurrentUser: true
+      })
+    }
+
+    // 4. Sắp xếp giảm dần theo totalMerit và gán rank
+    list.sort((a, b) => b.totalMerit - a.totalMerit)
+    list.forEach((entry, idx) => {
+      entry.rank = idx + 1
+    })
+
+    return list
+  }
+
   return {
     profile,
     init,
@@ -615,6 +738,11 @@ export function useMeritSystem() {
     outfitShopModalOpen,
     openOutfitShopModal,
     closeOutfitShopModal,
+    leaderboardModalOpen,
+    openLeaderboardModal,
+    closeLeaderboardModal,
+    getLeaderboard,
+    TEMPLE_CONTRIBUTIONS_SEED,
     currentTierInfo,
     dailyRemainingPoints,
     activeMeritToast,

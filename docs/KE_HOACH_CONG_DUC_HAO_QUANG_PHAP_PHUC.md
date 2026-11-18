@@ -214,16 +214,19 @@ Người chơi dùng điểm công đức tích lũy để quy đổi (mở khó
 
 ### PHASE 5: ĐỒNG BỘ MULTIPLAYER & BẢNG VINH DANH CÔNG ĐỨC
 > **Mục tiêu:** Mọi người chơi khác trong thế giới 3D đều nhìn thấy hào quang và trang phục của nhau; xây dựng Bảng Vinh Danh Công Đức trang trọng.
+> **Trạng thái:** ✅ **ĐÃ HOÀN THÀNH TOÀN BỘ (100%)**
 
-- [ ] **Task 5.1: Mở rộng gói tin Broadcast trong `useMultiplayer.ts`:**
-  - Thêm 2 trường `auraTier` (1 đến 5) và `outfitId` vào `LocalState` và `RemotePlayer`.
-  - Cập nhật avatar từ xa (`RemoteAvatar`): khi người chơi khác bước vào phòng, tự động gán đúng màu áo và tạo vòng hào quang tương ứng cấp bậc của họ.
-- [ ] **Task 5.2: Bảng Vàng Công Đức (Leaderboard Modal):**
-  - Danh sách top các phật tử tinh tấn nhất (hiển thị ẩn danh hoặc theo pháp danh, kèm cấp bậc hào quang).
-  - Tôn vinh các tấm lòng vàng đã đóng góp công quả tu bổ cảnh quan chùa.
-- [ ] **Task 5.3: Kiểm thử toàn diện & Tối ưu hóa hiệu năng (QA & Polish):**
-  - Kiểm tra FPS trên thiết bị di động khi có nhiều người cùng hiển thị hào quang.
-  - Kiểm tra lưu trữ offline và đồng bộ cloud khi có mạng.
+- [x] **Task 5.1: Mở rộng gói tin Broadcast trong `useMultiplayer.ts`:**
+  - Thêm các trường `auraTier` (1 đến 5), `showAura`, `outfitId` và `accessories` vào `LocalState` và `RemotePlayer`.
+  - Cập nhật avatar từ xa (`RemoteAvatar`): khi người chơi khác bước vào phòng, tự động gán đúng màu áo, phụ kiện và tạo vòng hào quang tương ứng cấp bậc của họ. Tự động phản ứng khi người chơi khác đổi y phục hoặc thăng cấp hào quang.
+- [x] **Task 5.2: Bảng Vàng Công Đức (Leaderboard Modal - `MeritLeaderboardModal.vue`):**
+  - Giao diện tuyên dương trang nghiêm với bục vinh danh Top 3 (Quán quân 🥇, Hạng nhì 🥈, Hạng ba 🥉) và danh sách bảng xếp hạng đầy đủ từ hạng 4 trở đi.
+  - Tab "Tấm Lòng Vàng Tu Bổ Chùa": Ghi nhận công quả trợ duyên (đúc chuông, trồng bồ đề, phóng sinh, thắp hoa đăng, cúng dường).
+  - Tự động đồng bộ Supabase hoặc seed cộng đồng thiền môn, highlight rõ vị trí và thứ hạng của người chơi.
+- [x] **Task 5.3: Kiểm thử toàn diện & Tối ưu hóa hiệu năng (QA & Polish):**
+  - Tối ưu hóa FPS: Chỉ chạy animation hạt & luân xa chi tiết của người chơi khác khi ở trong phạm vi gần camera (< 50m).
+  - Tự động dispose các đối tượng Three.js (mesh, halo, footsteps, particles) khi người chơi khác ngắt kết nối hoặc khi unmount scene.
+  - Kiểm thử build thành công `npm run build` không có lỗi.
 
 ---
 

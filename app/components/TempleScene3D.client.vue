@@ -71,7 +71,20 @@ const messages = mp.messages
 const chatText = ref('')
 const chatOpen = ref(true)
 const chatScrollEl = ref<HTMLElement | null>(null)
-interface RemoteAvatar { group: THREE.Group; legL: THREE.Group; legR: THREE.Group; label: THREE.Sprite; walkPhase: number; sandals?: THREE.Group }
+interface RemoteAvatar {
+  group: THREE.Group
+  legL: THREE.Group
+  legR: THREE.Group
+  label: THREE.Sprite
+  walkPhase: number
+  sandals?: THREE.Group
+  avatarCtrl: AvatarControllerResult
+  auraCtrl: AuraController
+  lastOutfitId?: string
+  lastAccessories?: string
+  lastAuraTier?: number
+  lastShowAura?: boolean
+}
 const remotes = new Map<string, RemoteAvatar>()
 // bong bóng chat trên đầu nhân vật
 const bubbles = new Map<string, { sprite: THREE.Sprite; group: THREE.Object3D; hideAt: number }>()
@@ -195,7 +208,7 @@ function animateLegs() {
   avatar.position.y = avatarPos.y + Math.abs(Math.sin(walkPhase)) * 0.06 * walkAmt
 }
 
-// Hiển thị & đồng bộ người chơi khác
+// Hiển thị & đồng bộ người chơi khác (Phase 5: Hào quang & Pháp phục)
 function syncRemotes(dt: number) {
   const seen = new Set<string>()
   const k = Math.min(1, dt * 10)
@@ -203,18 +216,60 @@ function syncRemotes(dt: number) {
     const p = mp.players[id]; seen.add(id)
     let r = remotes.get(id)
     if (!r) {
-      const a = buildAvatar(colorFromId(id))
+      const outfitId = p.outfitId || colorFromId(id)
+      const accessories = p.accessories || []
+      const a = buildAvatar(outfitId, accessories)
       const label = makeNameTag(p.name)
       a.group.add(label)
+
+      const aura = createAuraHalo(p.auraTier || 1, p.showAura !== false, scene)
+      a.group.add(aura.group)
+
       scene.add(a.group)
-      r = { group: a.group, legL: a.legL, legR: a.legR, label, walkPhase: 0 }
+      r = {
+        group: a.group,
+        legL: a.legL,
+        legR: a.legR,
+        label,
+        walkPhase: 0,
+        avatarCtrl: a,
+        auraCtrl: aura,
+        lastOutfitId: typeof outfitId === 'string' ? outfitId : String(outfitId),
+        lastAccessories: JSON.stringify(accessories),
+        lastAuraTier: p.auraTier,
+        lastShowAura: p.showAura
+      }
       remotes.set(id, r)
     }
+
     p.x += (p.tx - p.x) * k; p.y += (p.ty - p.y) * k; p.z += (p.tz - p.z) * k
     let dyaw = p.tyaw - p.yaw; while (dyaw > Math.PI) dyaw -= Math.PI * 2; while (dyaw < -Math.PI) dyaw += Math.PI * 2
     p.yaw += dyaw * k
     r.group.position.set(p.x, p.y, p.z)
     r.group.rotation.y = p.yaw
+
+    // Đồng bộ trang phục nếu có thay đổi từ người chơi khác
+    const curAccKey = JSON.stringify(p.accessories || [])
+    const curOutfitKey = p.outfitId || String(colorFromId(id))
+    if (r.lastOutfitId !== curOutfitKey || r.lastAccessories !== curAccKey) {
+      r.lastOutfitId = curOutfitKey
+      r.lastAccessories = curAccKey
+      r.avatarCtrl.setOutfit(p.outfitId || colorFromId(id), p.accessories || [])
+    }
+
+    // Đồng bộ Hào quang nếu có thay đổi
+    if (r.lastAuraTier !== p.auraTier || r.lastShowAura !== p.showAura) {
+      r.lastAuraTier = p.auraTier ?? 1
+      r.lastShowAura = p.showAura !== false
+      r.auraCtrl.setTier(r.lastAuraTier, r.lastShowAura)
+    }
+
+    // Tối ưu hóa FPS: Cập nhật animation Hào quang của người chơi khác khi ở gần camera (< 50m)
+    const distCam = camera ? camera.position.distanceTo(r.group.position) : 0
+    if (distCam < 50) {
+      r.auraCtrl.update(dt, p.st === 1 ? 1 : 0, r.group.position)
+    }
+
     if (p.st === 2) { // quỳ
       r.legL.rotation.x = -1.5; r.legR.rotation.x = -1.5; r.group.position.y = p.y - 0.5
     } else if (p.st === 1) { // đi
@@ -233,7 +288,13 @@ function syncRemotes(dt: number) {
     }
   }
   for (const [id, r] of remotes) {
-    if (!seen.has(id)) { scene.remove(r.group); if (r.sandals) scene.remove(r.sandals); bubbles.delete(id); remotes.delete(id) }
+    if (!seen.has(id)) {
+      scene.remove(r.group)
+      r.auraCtrl.dispose()
+      if (r.sandals) scene.remove(r.sandals)
+      bubbles.delete(id)
+      remotes.delete(id)
+    }
   }
 }
 function updateCamera(lerpK = 1) {
@@ -780,11 +841,15 @@ function startScene() {
   auraCtrl = createAuraHalo(meritProfile.currentTier, meritProfile.showAura, scene)
   avatar.add(auraCtrl.group)
 
-  // --- Multiplayer: kết nối & phát vị trí của mình ---
+  // --- Multiplayer: kết nối & phát vị trí của mình (kèm Hào quang & Pháp phục - Phase 5) ---
   mp.connect(() => ({
     x: avatarPos.x, y: avatarPos.y, z: avatarPos.z, yaw: avatarYaw,
     st: sitting.value ? 2 : (walkAmt > 0.35 ? 1 : 0),
-    bare: sandalsOff.value
+    bare: sandalsOff.value,
+    auraTier: meritProfile.currentTier,
+    showAura: meritProfile.showAura,
+    outfitId: meritProfile.currentOutfit,
+    accessories: meritProfile.activeAccessories
   }))
 
   // đèn ấm trong đại điện (ít đèn, phủ rộng — giảm tải)
@@ -836,6 +901,9 @@ onBeforeUnmount(() => {
   cancelAnimationFrame(raf)
   window.removeEventListener('resize', onResize)
   auraCtrl?.dispose()
+  for (const [, r] of remotes) {
+    r.auraCtrl?.dispose()
+  }
   mp.disconnect()
   renderer?.dispose()
 })

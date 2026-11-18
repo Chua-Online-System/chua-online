@@ -17,6 +17,7 @@ import MeritLevelUpModal from '~/components/merit/MeritLevelUpModal.vue'
 import MeritProfileModal from '~/components/merit/MeritProfileModal.vue'
 import CheckInModal from '~/components/merit/CheckInModal.vue'
 import OutfitShopModal from '~/components/merit/OutfitShopModal.vue'
+import MeritLeaderboardModal from '~/components/merit/MeritLeaderboardModal.vue'
 import { useMeritSystem } from '~/composables/useMeritSystem'
 
 const { current, cloudEnabled, init, enterAsGuest, signUp, signIn, signOut } = useAuth()
@@ -31,6 +32,9 @@ const {
   outfitShopModalOpen,
   openOutfitShopModal,
   closeOutfitShopModal,
+  leaderboardModalOpen,
+  openLeaderboardModal,
+  closeLeaderboardModal,
   canCheckInToday,
   toggleAura
 } = useMeritSystem()
@@ -91,6 +95,10 @@ function onInteract(action: string) {
   }
   if (action === 'modal_outfit_shop' || action === 'outfit_shop' || action === 'phap_y') {
     openOutfitShopModal()
+    return
+  }
+  if (action === 'modal_leaderboard' || action === 'leaderboard' || action === 'bang_vang') {
+    openLeaderboardModal()
     return
   }
   if (action === 'modal_diem_danh' || action === 'diem-danh') {
@@ -276,6 +284,10 @@ async function doSignOut() { await signOut(); showGate.value = true }
         <span>👘</span>
         <span class="hidden sm:inline">Pháp Y</span>
       </button>
+      <button @click="openLeaderboardModal" class="btn-hud btn-leaderboard" title="Bảng Vàng Công Đức – Tôn Vinh Tinh Tấn">
+        <span>🏆</span>
+        <span class="hidden sm:inline">Bảng Vàng</span>
+      </button>
       <button @click="showMeritModal = true" class="btn-hud btn-merit" title="Sổ Công Đức Tu Học">
         <span>{{ currentTierInfo.badge }}</span>
         <span class="font-serif font-bold text-amber-300">{{ profile.totalMerit }}</span>
@@ -431,6 +443,26 @@ async function doSignOut() { await signOut(); showGate.value = true }
           </div>
         </div>
       </transition>
+
+      <!-- Modal Bảng Vàng Công Đức (Phase 5) -->
+      <transition
+        enter-active-class="transition duration-300 ease-out"
+        enter-from-class="opacity-0"
+        enter-to-class="opacity-100"
+        leave-active-class="transition duration-200 ease-in"
+        leave-from-class="opacity-100"
+        leave-to-class="opacity-0"
+      >
+        <div
+          v-if="leaderboardModalOpen"
+          class="fixed inset-0 z-50 flex items-center justify-center bg-black/65 p-4 backdrop-blur-sm overflow-y-auto"
+          @click.self="closeLeaderboardModal"
+        >
+          <div class="w-full max-w-4xl my-auto animate-fade-up">
+            <MeritLeaderboardModal @close="closeLeaderboardModal" />
+          </div>
+        </div>
+      </transition>
     </ClientOnly>
   </div>
 </template>
@@ -507,6 +539,15 @@ async function doSignOut() { await signOut(); showGate.value = true }
 }
 .btn-outfit:hover {
   background: linear-gradient(135deg, rgba(212, 153, 36, 0.4), rgba(140, 45, 25, 0.3));
+  border-color: #ffd54f;
+  box-shadow: 0 0 12px rgba(255, 213, 79, 0.35);
+}
+.btn-leaderboard {
+  background: linear-gradient(135deg, rgba(255, 213, 79, 0.22), rgba(255, 152, 0, 0.18));
+  border-color: rgba(255, 213, 79, 0.55);
+}
+.btn-leaderboard:hover {
+  background: linear-gradient(135deg, rgba(255, 213, 79, 0.4), rgba(255, 152, 0, 0.3));
   border-color: #ffd54f;
   box-shadow: 0 0 12px rgba(255, 213, 79, 0.35);
 }

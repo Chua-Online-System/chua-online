@@ -6,12 +6,28 @@ export interface RemotePlayer {
   name: string
   x: number; y: number; z: number; yaw: number; st: number // st: 0 đứng, 1 đi, 2 quỳ
   bare: boolean // đã cởi dép (để dép ngoài)
+  // Phase 5: Đồng bộ Hào quang & Pháp phục người chơi từ xa
+  auraTier?: number
+  showAura?: boolean
+  outfitId?: string
+  accessories?: string[]
   // mốc nội suy cho mượt
   tx: number; ty: number; tz: number; tyaw: number
   lastSeen: number
 }
 
-export interface LocalState { x: number; y: number; z: number; yaw: number; st: number; bare: boolean }
+export interface LocalState {
+  x: number
+  y: number
+  z: number
+  yaw: number
+  st: number
+  bare: boolean
+  auraTier?: number
+  showAura?: boolean
+  outfitId?: string
+  accessories?: string[]
+}
 export interface ChatMsg { id: string; name: string; text: string; ts: number; mine?: boolean }
 
 /**
@@ -42,10 +58,19 @@ export function useMultiplayer() {
     if (ex) {
       ex.tx = p.x; ex.ty = p.y; ex.tz = p.z; ex.tyaw = p.yaw
       ex.st = p.st; ex.bare = !!p.bare; ex.name = p.name; ex.lastSeen = Date.now()
+      if (p.auraTier !== undefined) ex.auraTier = p.auraTier
+      if (p.showAura !== undefined) ex.showAura = p.showAura
+      if (p.outfitId !== undefined) ex.outfitId = p.outfitId
+      if (p.accessories !== undefined) ex.accessories = p.accessories
     } else {
       players[p.id] = {
         id: p.id, name: p.name, x: p.x, y: p.y, z: p.z, yaw: p.yaw,
-        tx: p.x, ty: p.y, tz: p.z, tyaw: p.yaw, st: p.st, bare: !!p.bare, lastSeen: Date.now()
+        tx: p.x, ty: p.y, tz: p.z, tyaw: p.yaw, st: p.st, bare: !!p.bare,
+        auraTier: p.auraTier ?? 1,
+        showAura: p.showAura !== false,
+        outfitId: p.outfitId ?? 'robe_lam',
+        accessories: p.accessories ?? [],
+        lastSeen: Date.now()
       }
     }
   }
@@ -76,7 +101,21 @@ export function useMultiplayer() {
     timer = setInterval(() => {
       if (!getState) return
       const s = getState()
-      const payload = { t: 'pos', id: myId, name: current.value?.name || 'Khách', x: s.x, y: s.y, z: s.z, yaw: s.yaw, st: s.st, bare: s.bare }
+      const payload = {
+        t: 'pos',
+        id: myId,
+        name: current.value?.name || 'Khách',
+        x: s.x,
+        y: s.y,
+        z: s.z,
+        yaw: s.yaw,
+        st: s.st,
+        bare: s.bare,
+        auraTier: s.auraTier,
+        showAura: s.showAura,
+        outfitId: s.outfitId,
+        accessories: s.accessories
+      }
       try { bc?.postMessage(payload) } catch {}
       try { channel?.send({ type: 'broadcast', event: 'pos', payload }) } catch {}
       const now = Date.now()
