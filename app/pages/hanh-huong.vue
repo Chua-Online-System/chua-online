@@ -307,9 +307,12 @@ async function doSignOut() { await signOut(); showGate.value = true }
       <button @click="doSignOut" class="btn-signout" title="Rời chùa">Rời chùa</button>
     </div>
 
-    <!-- Nhạc nền thiền với volume & soundscape -->
+    <!-- Nhạc nền thiền với volume & soundscape (đặt góc trái, không đè lên chat góc phải) -->
     <ClientOnly>
-      <MusicToggle />
+      <MusicToggle
+        position-class="fixed bottom-[156px] left-4 sm:bottom-6 sm:left-6 z-40"
+        menu-align="left"
+      />
     </ClientOnly>
 
     <!-- 1. Bảng thờ cúng nơi điện thờ (Nhang, Chuông, Cúng dường, Cầu an, Xin xăm) -->

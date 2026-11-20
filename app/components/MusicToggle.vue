@@ -15,6 +15,17 @@ const {
   setSoundscape
 } = useAmbientMusic()
 
+const props = withDefaults(
+  defineProps<{
+    positionClass?: string
+    menuAlign?: 'left' | 'right'
+  }>(),
+  {
+    positionClass: 'fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-40 select-none',
+    menuAlign: 'right'
+  }
+)
+
 const showMenu = ref(false)
 const PREF = 'dichua_music'
 
@@ -58,7 +69,7 @@ onBeforeUnmount(() => stop())
 </script>
 
 <template>
-  <div class="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-40 select-none">
+  <div :class="[positionClass, 'select-none']">
     <!-- Popover bảng điều khiển âm thanh thiền -->
     <transition
       enter-active-class="transition duration-300 ease-out"
@@ -70,7 +81,8 @@ onBeforeUnmount(() => stop())
     >
       <div
         v-if="showMenu"
-        class="card-zen absolute bottom-14 right-0 w-72 p-4 shadow-2xl border border-dong/40 bg-kem/95 backdrop-blur-md rounded-2xl text-go mb-2"
+        class="card-zen absolute bottom-14 w-72 p-4 shadow-2xl border border-dong/40 bg-kem/95 backdrop-blur-md rounded-2xl text-go mb-2"
+        :class="menuAlign === 'left' ? 'left-0' : 'right-0'"
       >
         <div class="flex items-center justify-between pb-3 border-b border-dong/20">
           <div class="flex items-center gap-1.5 font-serif text-sm font-semibold text-do">

@@ -1039,7 +1039,9 @@ defineExpose({
           <button type="submit">Gửi</button>
         </form>
       </div>
-      <button class="chat-toggle" @click="chatOpen = !chatOpen">💬<span v-if="!chatOpen && messages.length" class="chat-badge">{{ messages.length }}</span></button>
+      <button v-if="!chatOpen" class="chat-toggle" title="Mở khung trò chuyện" @click="chatOpen = true">
+        💬<span v-if="messages.length" class="chat-badge">{{ messages.length }}</span>
+      </button>
     </div>
   </div>
 </template>
