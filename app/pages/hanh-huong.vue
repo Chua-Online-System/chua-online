@@ -232,7 +232,7 @@ async function doSignOut() { await signOut(); showGate.value = true }
     <transition name="fade">
       <div v-if="showGate" class="gate-overlay">
         <div class="gate-card">
-          <div class="lotus">🪷</div>
+          <div class="lotus">🌸</div>
           <h1>Đi Chùa Online</h1>
           <p class="tagline">Tự tạo tài khoản hành hương — leo núi, qua cổng tam quan,
             vào chùa lễ Phật như ngoài đời.</p>
@@ -264,7 +264,7 @@ async function doSignOut() { await signOut(); showGate.value = true }
     <!-- thanh điều hướng & người dùng góc trên -->
     <div v-if="!showGate && current" class="userbar">
       <NuxtLink to="/chua" class="btn-hud" title="Về Chánh điện 2D">
-        <span>🪷</span>
+        <span>🏯</span>
         <span class="hidden sm:inline">Chánh điện</span>
       </NuxtLink>
       <button @click="onInteract('map')" class="btn-hud" title="Bản đồ chùa 2.5D">

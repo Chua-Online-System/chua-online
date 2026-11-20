@@ -51,7 +51,15 @@ export const LandscapeMats = {
       emissiveIntensity: 0.3
     }),
   signRed: () =>
-    new THREE.MeshStandardMaterial({ color: 0x7c231c, roughness: 0.75 })
+    new THREE.MeshStandardMaterial({ color: 0x7c231c, roughness: 0.75 }),
+  stoneLight: () =>
+    new THREE.MeshStandardMaterial({ color: 0xa5a097, roughness: 1 }),
+  tileDark: () =>
+    new THREE.MeshStandardMaterial({ color: 0x3f4a56, roughness: 0.55, metalness: 0.2 }),
+  lampGold: () =>
+    new THREE.MeshStandardMaterial({ color: 0xd4af5a, metalness: 0.95, roughness: 0.22 }),
+  lampGlow: () =>
+    new THREE.MeshStandardMaterial({ color: 0xd23b2e, emissive: 0xff5a3c, emissiveIntensity: 0.9, roughness: 0.6 })
 }
 
 function makeBox(w: number, h: number, d: number, mat: THREE.Material, x = 0, y = 0, z = 0) {

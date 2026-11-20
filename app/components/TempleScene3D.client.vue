@@ -439,8 +439,8 @@ function doInteract() {
     }
     if (hit.action === 'fish_view') {
       const count = world.fishPond?.getFishCount() || 16
-      toast.value = `🪷 Hồ Sen Tam Bảo an tịnh — hiện có ${count} chú cá Koi đang thong dong bơi lội.`
-      setTimeout(() => { if (toast.value.startsWith('🪷')) toast.value = '' }, 4000)
+      toast.value = `🌸 Hồ Sen Tam Bảo an tịnh — hiện có ${count} chú cá Koi đang thong dong bơi lội.`
+      setTimeout(() => { if (toast.value.startsWith('🌸')) toast.value = '' }, 4000)
       emit('interact', 'fish_view')
       return
     }
@@ -489,8 +489,8 @@ function doInteract() {
       return
     }
     if (hit.action === 'lantern_release') {
-      toast.value = '🪷 Chuẩn bị đài sen hoa đăng thả xuôi dòng Sông Trăng cầu an…'
-      setTimeout(() => { if (toast.value.startsWith('🪷')) toast.value = '' }, 3000)
+      toast.value = '🌸 Chuẩn bị đài sen hoa đăng thả xuôi dòng Sông Trăng cầu an…'
+      setTimeout(() => { if (toast.value.startsWith('🌸')) toast.value = '' }, 3000)
       emit('interact', 'lantern_release')
       return
     }
@@ -572,7 +572,7 @@ const currentZoneName = computed(() => {
   if (x >= 40 && z >= 22) return '🔔 Lầu Chuông Đại Hồng Chung 3D'
   if (x > 24 && z > 14) return '🏮 Đại Lộ Đông · Lối Sang Lầu Chuông'
   if (x >= 38 && z < 22 && z > -24) return '🌳 Vườn Bồ Đề Tâm & Cổ Thụ 3D'
-  if (z < -34 && Math.abs(x) <= 30 && z >= -68) return '🪷 Lối Ra Bến Thả Hoa Đăng'
+  if (z < -34 && Math.abs(x) <= 30 && z >= -68) return '🌸 Lối Ra Bến Thả Hoa Đăng'
   if (z < -68) return '🌌 Bến Hoa Đăng Sông Trăng 3D'
   return '🍃 Khuôn Viên Thiền Tịnh'
 })
@@ -959,7 +959,7 @@ defineExpose({
           <h1>Chùa Trên Núi</h1>
           <p class="sub">Ngôi cổ tự tọa lạc trên đỉnh non cao. Vượt từng bậc đá,
             qua cổng tam quan uy nghi để bước vào chốn thiền tịnh.</p>
-          <button class="btn-gold" @click="startClimb">🪷 Bắt đầu leo núi</button>
+          <button class="btn-gold" @click="startClimb">🌸 Bắt đầu leo núi</button>
         </div>
       </div>
     </transition>
