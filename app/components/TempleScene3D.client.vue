@@ -312,6 +312,9 @@ function startClimb() {
   ensureAudioStarted()
   phase.value = 'climbing'
   climbT = 0
+  cam.yaw = 0
+  cam.pitch = 0.28
+  cam.dist = 6.2
 }
 
 // --- Vạch cam: cởi dép để vào lễ / mang dép để ra về ---
@@ -601,8 +604,8 @@ function animate() {
     avatarPos.set(p.x, p.y - 1.65, p.z) // chân nhân vật
     const dir = b.clone().sub(a); if (dir.lengthSq() > 1e-4) avatarYaw = Math.atan2(dir.x, dir.z)
     walkAmt = 1; walkPhase += dt * 9
-    cam.yaw = avatarYaw + Math.PI; cam.pitch = 0.32; cam.dist = 5.6
-    placeAvatar(); animateLegs(); updateCamera(0.12)
+    cam.yaw = avatarYaw + Math.PI; cam.pitch = 0.28; cam.dist = 6.2
+    placeAvatar(); animateLegs(); updateCamera(0.1)
     if (climbT >= 1) {
       phase.value = 'inside'
       const targetY = getGroundHeight(fullPath[n].x, fullPath[n].z, world.floorY)

@@ -385,12 +385,17 @@ export function getGroundHeight(x: number, z: number, floorY: number): number {
     return floorY - 0.75 // Cầu tàu gỗ vươn ra sông
   }
 
-  // 7. Cầu thang đá bám sườn trước núi (Z: 62 đến 96, X: ±6.5)
-  if (Math.abs(x) <= 6.5 && z > 62 && z <= 96) {
+  // 7. Cầu thang đá bám sườn trước núi & sườn dốc trước chùa (Z: 62 đến 96)
+  if (z > 62 && z <= 96) {
     const t = (z - 62) / 34
     return floorY + t * (-10 - floorY) // dốc đều từ floorY (18) xuống chân núi (-10)
   }
 
-  // Mặt sân chùa mặc định
+  // 8. Chân núi & Thềm đá đón phật tử (Z > 96)
+  if (z > 96) {
+    return -10
+  }
+
+  // Mặt sân chùa mặc định (Z <= 62)
   return floorY
 }

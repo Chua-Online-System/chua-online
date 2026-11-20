@@ -451,6 +451,19 @@ export function buildWorld(scene: THREE.Scene): World {
   // --- Cầu thang bám sườn trước núi (mép đỉnh z=62) ---
   const { group: stairs, path: climbPath } = buildStairs(new THREE.Vector3(0, -10, 96), new THREE.Vector3(0, floorY, 62), 48, 10)
   root.add(stairs)
+
+  // Thềm đá chân núi đón phật tử (Z: 94 đến 116, Y: -10)
+  root.add(box(24, 1.2, 22, M.stone(), 0, -10 - 0.6, 105))
+  root.add(box(10, 0.08, 20, M.stoneLight(), 0, -10 + 0.02, 105))
+  root.add(kinhPillar(-7, -10, 101))
+  root.add(kinhPillar(7, -10, 101))
+  root.add(pineTree(-14, -10, 104, 1.3))
+  root.add(pineTree(14, -10, 104, 1.3))
+
+  // Nền đồi cỏ chân núi rộng lớn (ngăn khoảng trống phía sau)
+  const baseTerrain = new THREE.Mesh(new THREE.CylinderGeometry(180, 240, 6, 36), M.grass())
+  baseTerrain.position.set(0, -13, 30); baseTerrain.receiveShadow = true; root.add(baseTerrain)
+
   for (let i = 0; i < 12; i++) {
     const t = i / 12, yy = THREE.MathUtils.lerp(-10, floorY, t) - 0.3, z = THREE.MathUtils.lerp(96, 62, t), s = i % 2 ? 1 : -1
     root.add(pineTree((8 + Math.random() * 4) * s, yy, z + (Math.random() - 0.5) * 4, 0.9 + Math.random() * 0.6))
