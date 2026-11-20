@@ -69,7 +69,7 @@ function handleTeleport(target: { x: number; z: number; name: string }) {
 const online = mp.online
 const messages = mp.messages
 const chatText = ref('')
-const chatOpen = ref(true)
+const chatOpen = ref(false)
 const chatScrollEl = ref<HTMLElement | null>(null)
 interface RemoteAvatar {
   group: THREE.Group
@@ -886,7 +886,7 @@ function startScene() {
   }
 
   try { isTouch.value = window.matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window } catch {}
-  chatOpen.value = !isTouch.value // mobile: mặc định thu gọn chat
+  chatOpen.value = false // Mặc định thu gọn khung chat để trải nghiệm ngắm cảnh chùa trọn vẹn
 
   clock = new THREE.Clock()
   window.addEventListener('resize', onResize)
@@ -913,6 +913,7 @@ onBeforeUnmount(() => {
 
 defineExpose({
   phase,
+  isTouch,
   spawnFish: (speciesId: string, name?: string) => world?.fishPond?.spawnFish(speciesId, name),
   feedFish: (pos?: THREE.Vector3, yaw?: number) => world?.fishPond?.feedFish(pos || avatarPos, yaw ?? avatarYaw),
   addBodhiRibbon: (wish: string, author: string, color: 'red' | 'yellow' | 'white') =>
@@ -1023,7 +1024,11 @@ defineExpose({
     </transition>
 
     <!-- Khung chat (góc phải) -->
-    <div class="chat" @pointerdown.stop @pointerup.stop @pointermove.stop>
+    <div
+      class="chat"
+      :class="{ 'chat-mobile-lifted': isTouch && phase === 'inside' }"
+      @pointerdown.stop @pointerup.stop @pointermove.stop
+    >
       <div v-show="chatOpen" class="chat-panel">
         <div class="chat-head">💬 Trò chuyện tại chùa
           <button class="chat-x" @click="chatOpen = false">✕</button>
@@ -1176,4 +1181,33 @@ defineExpose({
 }
 .fade-enter-active, .fade-leave-active { transition: opacity .6s ease; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
+
+@media (max-width: 640px) {
+  .overlay.intro, .overlay.threshold {
+    padding: 14px;
+    padding-bottom: 74px;
+  }
+  .intro-card {
+    max-width: 320px;
+    padding: 18px 16px;
+    border-radius: 18px;
+  }
+  .intro-card h1 {
+    font-size: 1.85rem;
+    margin: 0 0 8px;
+  }
+  .intro-card .sub {
+    font-size: 0.84rem;
+    line-height: 1.45;
+    margin-bottom: 16px;
+  }
+  .intro-card .btn-gold {
+    padding: 10px 22px;
+    font-size: 0.95rem;
+  }
+  .chat.chat-mobile-lifted {
+    bottom: 130px;
+    right: 14px;
+  }
+}
 </style>

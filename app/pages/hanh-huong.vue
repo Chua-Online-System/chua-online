@@ -45,6 +45,16 @@ const practiceTab = ref<'beads' | 'meditation' | 'sutras' | 'dharma'>('beads')
 const showGate = ref(true) // cửa "tự cấp tài khoản" trước khi vào
 const showMeritModal = ref(false)
 
+const isInsideTouch = computed(() => {
+  return templeSceneRef.value?.phase === 'inside' && templeSceneRef.value?.isTouch
+})
+const musicTogglePosClass = computed(() => {
+  if (isInsideTouch.value) {
+    return 'fixed bottom-[130px] left-3.5 sm:bottom-6 sm:left-6 z-40'
+  }
+  return 'fixed bottom-3.5 left-3.5 sm:bottom-6 sm:left-6 z-40'
+})
+
 // khách đã lưu -> vào thẳng, không nháy cửa tài khoản
 if (import.meta.client) { try { if (localStorage.getItem('dco.pilgrim')) showGate.value = false } catch {} }
 
@@ -310,7 +320,7 @@ async function doSignOut() { await signOut(); showGate.value = true }
     <!-- Nhạc nền thiền với volume & soundscape (đặt góc trái, không đè lên chat góc phải) -->
     <ClientOnly>
       <MusicToggle
-        position-class="fixed bottom-[156px] left-4 sm:bottom-6 sm:left-6 z-40"
+        :position-class="musicTogglePosClass"
         menu-align="left"
       />
     </ClientOnly>
@@ -506,10 +516,45 @@ async function doSignOut() { await signOut(); showGate.value = true }
 .note { font-size: .78rem; opacity: .6; margin-top: 16px; }
 
 .userbar {
-  position: fixed; top: 16px; left: 16px; z-index: 20; display: flex; gap: 8px; align-items: center;
-  background: rgba(36,22,14,.75); color: #f5efe0; padding: 6px 14px; border-radius: 999px;
-  border: 1px solid rgba(201,163,86,.45); backdrop-filter: blur(8px); font-size: .88rem;
-  box-shadow: 0 4px 20px rgba(0,0,0,.35);
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  max-width: calc(100vw - 20px);
+  z-index: 20;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  background: rgba(36,22,14,.85);
+  color: #f5efe0;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(201,163,86,.45);
+  backdrop-filter: blur(10px);
+  font-size: .82rem;
+  box-shadow: 0 4px 20px rgba(0,0,0,.4);
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.userbar::-webkit-scrollbar {
+  display: none;
+}
+.btn-hud, .name, .divider, .btn-signout {
+  flex-shrink: 0;
+}
+@media (min-width: 768px) {
+  .userbar {
+    top: 16px;
+    left: 16px;
+    right: auto;
+    max-width: calc(100vw - 32px);
+    padding: 6px 14px;
+    gap: 8px;
+    font-size: .88rem;
+  }
 }
 .btn-hud {
   display: inline-flex; align-items: center; gap: 4px;
